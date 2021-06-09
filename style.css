@@ -1,0 +1,24 @@
+h1 {text-align: center; color:white; margin-top: 75px; font-style:italic}
+h2 {text-align: center; color:white}
+p {text-align: center;color:white}
+div {text-align: center;color:white}  
+.center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 50%;
+}
+.center2 {
+    display:block;
+    margin-left:auto;
+    margin-right:auto;
+    width: 20%;
+    background-color:	#446969 ;
+    border-color: #446969;
+}
+#canvas{
+  background-color: #446969;
+  margin-left: auto;
+  margin-right: auto;
+  border-bottom: 100px;
+}
