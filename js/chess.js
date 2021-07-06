@@ -1,15 +1,3 @@
-const canvas = document.querySelector('canvas');
-var c = canvas.getContext("2d");
-canvas.width=window.innerWidth/2.5;
-canvas.height=window.innerWidth/2.5;
-checkerBoard();
-var board = [];
-for(var i=0; i<8; i++) {
-    board[i] = new Array(8);
-}
-setupBoard();
-move(6,3,4,3);
-console.log(board);
 /*
 [4,2,3,5,6,3,2,4] ^ 
 [1,1,1,1,1,1,1,1] |
@@ -23,6 +11,10 @@ x-------------->  y
 [y][x]
 */
 function setupBoard(){
+    checkerBoard();
+    for(var i=0; i<8; i++) {
+        board[i] = new Array(8);
+    }
     board[0][0]= new piece(4,false,0,0);  board[7][0]= new piece(4,true,7,0); board[1][0]= new piece(1,false,1,0);  board[6][0]= new piece(1,true,6,0);
     board[0][1]= new piece(2,false,0,1);  board[7][1]= new piece(2,true,7,1); board[1][1]= new piece(1,false,1,1);  board[6][1]= new piece(1,true,6,1);
     board[0][2]= new piece(3,false,0,2);  board[7][2]= new piece(3,true,7,2); board[1][2]= new piece(1,false,1,2);  board[6][2]= new piece(1,true,6,2);
@@ -31,45 +23,53 @@ function setupBoard(){
     board[0][5]= new piece(3,false,0,5);  board[7][5]= new piece(3,true,7,5); board[1][5]= new piece(1,false,1,5);  board[6][5]= new piece(1,true,6,5);
     board[0][6]= new piece(2,false,0,6);  board[7][6]= new piece(2,true,7,6); board[1][6]= new piece(1,false,1,6);  board[6][6]= new piece(1,true,6,6);
     board[0][7]= new piece(4,false,0,7);  board[7][7]= new piece(4,true,7,7); board[1][7]= new piece(1,false,1,7);  board[6][7]= new piece(1,true,6,7);
+
 }
 
 function checkerBoard(){
-var mark = true;
-    for (var i=0;i<9;i++){
-        for(var j=0;j<9;j++){
-        mark ? c.fillStyle='white': c.fillStyle='#2E2934';
-        mark=!mark;
-        c.fillRect(i*canvas.width/8,j*canvas.width/8,canvas.width/8,canvas.height/8);
+    var mark = true;
+        for (var i=0;i<9;i++){
+            for(var j=0;j<9;j++){
+            mark ? ctx.fillStyle='white': ctx.fillStyle='#2E2934';
+            mark=!mark;
+            ctx.fillRect(i*canvas.width/8,j*canvas.width/8,canvas.width/8,canvas.height/8);
+            }
         }
-    }
 }
 // 1 pawn 2 knight 3 bishop 4 rook 5 queen 6 king
-
-function piece(piece, color,y,x){
-    this.piece=piece;
-    this.color=color;
-    this.x=x;
-    this.y=y;
-    var image=new Image();
-    image.onload=function(){
-        c.drawImage(image,x*canvas.height/8,y*canvas.width/8,canvas.width/8,canvas.height/8);
-    };
-    image.src=imageURL(piece,color);
+class piece{
+    constructor(piece, color,y,x){
+        this.piece=piece;
+        this.color=color;
+        this.x=x;
+        this.y=y;
+        this.loadImage();
+    }
+    loadImage(){
+        //not sure why no work with just putting this.x in draw
+        let xx = this.x; let yy = this.y;
+        var image=new Image();
+        image.src=imageURL(this.piece,this.color);
+        ctx.drawImage(image,xx*(canvas.height/8),yy*canvas.width/8,canvas.width/8,canvas.height/8);
+        setTimeout(function() {
+           ctx.drawImage(image,xx*(canvas.height/8),yy*canvas.width/8,canvas.width/8,canvas.height/8);
+        }, 50 );
+    }
 }
-
+function clearSquare(y,x){
+    (y%2==0&&x%2==0)||(y%2!=0&&x%2!=0) ? ctx.fillStyle='white': ctx.fillStyle='#2E2934'
+    ctx.fillRect(x*canvas.width/8,y*canvas.width/8,canvas.width/8,canvas.height/8);
+}
 function move(y,x,yy,xx){
+    clearSquare(y,x);
     board[yy][xx]=board[y][x];
-    board[yy][xx].y=this.y;
-    board[yy][xx].x=this.x;
-    board[yy][xx].onload;
-    board[y][x]=undefined;
+    board[yy][xx].y=yy;
+    board[yy][xx].x=xx;
+    clearSquare(yy,xx);
+    board[yy][xx].loadImage();
+    board[y][x]=null;
 }
-
-
-
-
-
-
+//color:true==white // 1 pawn 2 knight 3 bishop 4 rook 5 queen 6 king
 function imageURL(piece,color){
     if (color){
         switch(piece){
@@ -103,4 +103,11 @@ function imageURL(piece,color){
     }
 
 }
-
+//bootup 
+const canvas = document.querySelector('canvas');
+var ctx = canvas.getContext("2d");
+canvas.width=window.innerWidth/2.5;
+canvas.height=window.innerWidth/2.5;
+var board = [];
+setupBoard();
+console.log(board);
