@@ -23,7 +23,7 @@ function setupBoard(){
     board[0][5]= new piece(3,false,0,5);  board[7][5]= new piece(3,true,7,5); board[1][5]= new piece(1,false,1,5);  board[6][5]= new piece(1,true,6,5);
     board[0][6]= new piece(2,false,0,6);  board[7][6]= new piece(2,true,7,6); board[1][6]= new piece(1,false,1,6);  board[6][6]= new piece(1,true,6,6);
     board[0][7]= new piece(4,false,0,7);  board[7][7]= new piece(4,true,7,7); board[1][7]= new piece(1,false,1,7);  board[6][7]= new piece(1,true,6,7);
-
+    board[0].forEach((e)=>pieces.push(e)); board[1].forEach((e)=>pieces.push(e)); board[6].forEach((e)=>pieces.push(e)); board[7].forEach((e)=>pieces.push(e))
 }
 
 function checkerBoard(){
@@ -36,6 +36,12 @@ function checkerBoard(){
             }
         }
 }
+
+function clearSquare(y,x){
+    (y%2==0&&x%2==0)||(y%2!=0&&x%2!=0) ? ctx.fillStyle='white': ctx.fillStyle='#2E2934'
+    ctx.fillRect(x*canvas.width/8,y*canvas.width/8,canvas.width/8,canvas.height/8);
+}
+
 // 1 pawn 2 knight 3 bishop 4 rook 5 queen 6 king
 class piece{
     constructor(piece, color,y,x){
@@ -44,6 +50,7 @@ class piece{
         this.x=x;
         this.y=y;
         this.loadImage();
+        this.inital = true;
     }
     loadImage(){
         //not sure why no work with just putting this.x in draw
@@ -51,16 +58,16 @@ class piece{
         var image=new Image();
         image.src=imageURL(this.piece,this.color);
         ctx.drawImage(image,xx*(canvas.height/8),yy*canvas.width/8,canvas.width/8,canvas.height/8);
-        setTimeout(function() {
-           ctx.drawImage(image,xx*(canvas.height/8),yy*canvas.width/8,canvas.width/8,canvas.height/8);
-        }, 50 );
+        if (this.inital){
+            setTimeout(function() {
+            ctx.drawImage(image,xx*(canvas.height/8),yy*canvas.width/8,canvas.width/8,canvas.height/8);
+            }, 100 );
+            this.inital = false
+        }
     }
 }
-function clearSquare(y,x){
-    (y%2==0&&x%2==0)||(y%2!=0&&x%2!=0) ? ctx.fillStyle='white': ctx.fillStyle='#2E2934'
-    ctx.fillRect(x*canvas.width/8,y*canvas.width/8,canvas.width/8,canvas.height/8);
-}
-function move(y,x,yy,xx){
+
+function movePiece(y,x,yy,xx){
     clearSquare(y,x);
     board[yy][xx]=board[y][x];
     board[yy][xx].y=yy;
@@ -69,6 +76,31 @@ function move(y,x,yy,xx){
     board[yy][xx].loadImage();
     board[y][x]=null;
 }
+
+function mouseMove(e){
+    let rect = canvas.getBoundingClientRect()
+    x = e.clientX-rect.left
+    y = e.clientY-rect.top
+    if (drawinglink){
+        var image=new Image();
+        image.src = drawinglink
+        checkerBoard()
+        pieces.forEach((e)=>e.loadImage())
+        ctx.drawImage(image,x-canvas.width/16,y-canvas.width/16,canvas.width/8,canvas.height/8)
+    }
+}
+function mouseDown(e){
+    let xSquare = Math.floor((x)*8/canvas.width)
+    let ySquare = Math.floor((y)*8/canvas.height)
+    if (board[ySquare][xSquare]!=null){
+        isDrawing = true
+        drawinglink = imageURL(board[ySquare][xSquare].piece,board[ySquare][xSquare].color)
+    }
+}
+function mouseUp(e){
+    isDrawing = false
+}
+
 //color:true==white // 1 pawn 2 knight 3 bishop 4 rook 5 queen 6 king
 function imageURL(piece,color){
     if (color){
@@ -101,13 +133,21 @@ function imageURL(piece,color){
         case 6:
             return "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Chess_kdt45.svg/1920px-Chess_kdt45.svg.png";
     }
-
 }
+
 //bootup 
 const canvas = document.querySelector('canvas');
 var ctx = canvas.getContext("2d");
 canvas.width=window.innerWidth/2.5;
 canvas.height=window.innerWidth/2.5;
-var board = [];
+var board = []; var pieces = [];
+let x; let y; let isDrawing = false; let drawinglink;
 setupBoard();
+canvas.addEventListener("mousemove", function(e){mouseMove(e)})
+canvas.addEventListener("mousedown",function(e){mouseDown(e)})
+canvas.addEventListener("mouseup",function(e){mouseUp(e)})
 console.log(board);
+console.log(pieces);
+
+//let x = Math.floor((e.clientX-rect.left)*8/canvas.width)
+//let y = Math.floor((e.clientY-rect.top)*8/canvas.height)
