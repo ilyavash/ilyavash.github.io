@@ -49,8 +49,9 @@ class piece{
         this.color=color;
         this.x=x;
         this.y=y;
-        this.loadImage();
         this.inital = true;
+        this.loadImage();
+        this.isDead = false
     }
     loadImage(){
         //not sure why no work with just putting this.x in draw
@@ -61,14 +62,18 @@ class piece{
         if (this.inital){
             setTimeout(function() {
             ctx.drawImage(image,xx*(canvas.height/8),yy*canvas.width/8,canvas.width/8,canvas.height/8);
-            }, 100 );
+            }, 300 );
             this.inital = false
         }
     }
 }
 
 function movePiece(y,x,yy,xx){
+    if (y==yy&x==xx){return}
     clearSquare(y,x);
+    if (board[yy][xx]!=null){
+        board[yy][xx].isDead = true
+    }
     board[yy][xx]=board[y][x];
     board[yy][xx].y=yy;
     board[yy][xx].x=xx;
@@ -81,24 +86,27 @@ function mouseMove(e){
     let rect = canvas.getBoundingClientRect()
     x = e.clientX-rect.left
     y = e.clientY-rect.top
-    if (drawinglink){
+    if (isDrawing){
         var image=new Image();
         image.src = drawinglink
         checkerBoard()
-        pieces.forEach((e)=>e.loadImage())
+        pieces.forEach((e)=>{if(!e.isDead){e.loadImage()}})
         ctx.drawImage(image,x-canvas.width/16,y-canvas.width/16,canvas.width/8,canvas.height/8)
     }
 }
 function mouseDown(e){
-    let xSquare = Math.floor((x)*8/canvas.width)
-    let ySquare = Math.floor((y)*8/canvas.height)
+    xSquare = Math.floor((x)*8/canvas.width)
+    ySquare = Math.floor((y)*8/canvas.height)
     if (board[ySquare][xSquare]!=null){
         isDrawing = true
         drawinglink = imageURL(board[ySquare][xSquare].piece,board[ySquare][xSquare].color)
     }
 }
 function mouseUp(e){
+    movePiece(ySquare,xSquare,Math.floor((y)*8/canvas.width),Math.floor((x)*8/canvas.width))
     isDrawing = false
+    checkerBoard()
+    pieces.forEach((e)=>{if(!e.isDead){e.loadImage()}})
 }
 
 //color:true==white // 1 pawn 2 knight 3 bishop 4 rook 5 queen 6 king
@@ -141,7 +149,7 @@ var ctx = canvas.getContext("2d");
 canvas.width=window.innerWidth/2.5;
 canvas.height=window.innerWidth/2.5;
 var board = []; var pieces = [];
-let x; let y; let isDrawing = false; let drawinglink;
+let x; let y; let isDrawing = false; let drawinglink; let Xsquare; let ySquare;
 setupBoard();
 canvas.addEventListener("mousemove", function(e){mouseMove(e)})
 canvas.addEventListener("mousedown",function(e){mouseDown(e)})
