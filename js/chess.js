@@ -43,6 +43,7 @@ function clearSquare(y,x){
 }
 
 // 1 pawn 2 knight 3 bishop 4 rook 5 queen 6 king
+/*
 class piece{
     constructor(piece, color,y,x){
         this.piece=piece;
@@ -65,6 +66,27 @@ class piece{
             }, 300 );
             this.inital = false
         }
+    }
+}
+*/
+class piece{
+    constructor(piece, color,y,x){
+        this.piece=piece;
+        this.color=color;
+        this.x=x;
+        this.y=y;
+        this.isDead = false
+        this.image = this.importImage()
+        this.loadImage()
+    }
+    importImage(){
+        var image=new Image();
+        image.src=imageURL(this.piece,this.color);
+        return image;
+    }
+    loadImage(){
+        let xx = this.x; let yy = this.y;
+        ctx.drawImage(this.image,xx*(canvas.height/8),yy*canvas.width/8,canvas.width/8,canvas.height/8);
     }
 }
 
