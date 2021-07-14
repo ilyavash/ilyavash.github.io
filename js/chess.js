@@ -75,6 +75,7 @@ class piece{
         this.color=color;
         this.x=x;
         this.y=y;
+        this.inital = true;
         this.isDead = false
         this.image = this.importImage()
         this.loadImage()
@@ -87,6 +88,10 @@ class piece{
     loadImage(){
         let xx = this.x; let yy = this.y;
         ctx.drawImage(this.image,xx*(canvas.height/8),yy*canvas.width/8,canvas.width/8,canvas.height/8);
+        if (this.inital){
+            setTimeout(function() {ctx.drawImage(image,xx*(canvas.height/8),yy*canvas.width/8,canvas.width/8,canvas.height/8);}, 30 );
+            this.inital = false
+        }
     }
 }
 
