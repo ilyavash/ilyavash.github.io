@@ -13,7 +13,7 @@ x-------------->  y
 function setupBoard(){
     checkerBoard();
     for(var i=0; i<8; i++) {
-        board[i] = new Array(8);
+        board[i] = new Array(8)     /*i>1||i<6 ? board[i] = Array(8).fill(null) :*/ 
     }
     board[0][0]= new piece(4,false,0,0);  board[7][0]= new piece(4,true,7,0); board[1][0]= new piece(1,false,1,0);  board[6][0]= new piece(1,true,6,0);
     board[0][1]= new piece(2,false,0,1);  board[7][1]= new piece(2,true,7,1); board[1][1]= new piece(1,false,1,1);  board[6][1]= new piece(1,true,6,1);
@@ -24,6 +24,7 @@ function setupBoard(){
     board[0][6]= new piece(2,false,0,6);  board[7][6]= new piece(2,true,7,6); board[1][6]= new piece(1,false,1,6);  board[6][6]= new piece(1,true,6,6);
     board[0][7]= new piece(4,false,0,7);  board[7][7]= new piece(4,true,7,7); board[1][7]= new piece(1,false,1,7);  board[6][7]= new piece(1,true,6,7);
     board[0].forEach((e)=>pieces.push(e)); board[1].forEach((e)=>pieces.push(e)); board[6].forEach((e)=>pieces.push(e)); board[7].forEach((e)=>pieces.push(e))
+    
 }
 
 function checkerBoard(){
@@ -66,6 +67,7 @@ class piece{
             ctx.drawImage(image,xx*(canvas.height/8),yy*canvas.width/8,canvas.width/8,canvas.height/8);
             }, 300 );
             this.inital = false
+            return
         }
         ctx.drawImage(this.image,this.x*(canvas.height/8),this.y*canvas.width/8,canvas.width/8,canvas.height/8);
     }
@@ -73,6 +75,7 @@ class piece{
 
 function movePiece(y,x,yy,xx){
     if (y==yy&x==xx){return}
+    if(validMove(y,x).find(e=>e.x==xx&&e.y==yy)==null){return}
     clearSquare(y,x);
     if (board[yy][xx]!=null){
         board[yy][xx].isDead = true
@@ -84,17 +87,59 @@ function movePiece(y,x,yy,xx){
     board[yy][xx].loadImage();
     board[y][x]=null;
 }
+// 1 pawn 2 knight 3 bishop 4 rook 5 queen 6 king
 
+function validMove(y,x){
+    let piece = board[y][x]
+    let validMoves = []
+    switch(piece.piece){
+        case 1:
+            if (piece.color){
+                if(piece.y==6){
+                    if(board[5][x]==null){validMoves.push({y:5,x:x})}
+                    if(board[5][x]==null&&board[4][x]==null){validMoves.push({y:4,x:x})}
+                }
+                else{
+                    if(board[y-1][x]==null){validMoves.push({y:y-1,x:x})}
+                }
+                if (x-1!=-1&&board[y-1][x-1]!=null&&!board[y-1][x-1].color){validMoves.push({y:y-1,x:x-1,})}
+                if (x+1!=8&&board[y-1][x+1]!=null&&!board[y-1][x+1].color){validMoves.push({y:y-1,x:x+1})}
+                return validMoves
+            }
+            else{
+                if(piece.y==1){
+                    if(board[2][x]==null){validMoves.push({y:2,x:x})}
+                    if(board[2][x]==null&&board[3][x]==null){validMoves.push({y:3,x:x})}
+                }
+                else{
+                    if(board[y+1][x]!=null){validMoves.push({y:y+1,x:x})}
+                }
+                if (x-1!=-1&&board[y+1][x-1]!=null&&board[y+1][x-1].color){validMoves.push({y:y+1,x:x-1,})}
+                if (x+1!=8&&board[y+1][x+1]!=null&&board[y+1][x+1].color){validMoves.push({y:y+1,x:x+1})}
+                return validMoves
+            }
+        case 2:
+            if(y-1>-1&&x-2>-1&&(board[y-1][x-2]==null||board[y-1][x-2].color!=board[y][x].color)){validMoves.push({y:y-1,x:x-2,})}
+            if(y-2>-1&&x-1>-1&&(board[y-2][x-1]==null||board[y-2][x-1].color!=board[y][x].color)){validMoves.push({y:y-2,x:x-1,})}
+            if(y+1<8&&x-2>-1&&(board[y+1][x-2]==null||board[y+1][x-2].color!=board[y][x].color)){validMoves.push({y:y+1,x:x-2,})}
+            if(y+2<8&&x-1>-1&&(board[y+2][x-1]==null||board[y+2][x-1].color!=board[y][x].color)){validMoves.push({y:y+2,x:x-1,})}
+            if(y-2>-1&&x+1<8&&(board[y-2][x+1]==null||board[y-2][x+1].color!=board[y][x].color)){validMoves.push({y:y-2,x:x+1,})}
+            if(y-1>-1&&x+2<8&&(board[y-1][x+2]==null||board[y-1][x+2].color!=board[y][x].color)){validMoves.push({y:y-1,x:x+2,})}
+            if(y+1<8&&x+2<8&&(board[y+1][x+2]==null||board[y+1][x+2].color!=board[y][x].color)){validMoves.push({y:y+1,x:x+2,})}
+            if(y+2<8&&x+1>-1&&(board[y+2][x+1]==null||board[y+2][x+1].color!=board[y][x].color)){validMoves.push({y:y+2,x:x+1,})}
+            return validMoves
+        case 3:
+            
+    }
+}
 function mouseMove(e){
     let rect = canvas.getBoundingClientRect()
     x = e.clientX-rect.left
     y = e.clientY-rect.top
     if (isDrawing){
-        var image=new Image()
-        image.src = drawinglink
         checkerBoard()
         pieces.forEach((e)=>{if(!e.isDead){e.loadImage()}})
-        ctx.drawImage(image,x-canvas.width/16,y-canvas.width/16,canvas.width/8,canvas.height/8)
+        ctx.drawImage(drawingImage,x-canvas.width/16,y-canvas.width/16,canvas.width/8,canvas.height/8)
     }
 }
 function mouseDown(e){
@@ -102,7 +147,7 @@ function mouseDown(e){
     ySquare = Math.floor((y)*8/canvas.height)
     if (board[ySquare][xSquare]!=null){
         isDrawing = true
-        drawinglink = imageURL(board[ySquare][xSquare].piece,board[ySquare][xSquare].color)
+        drawingImage = board[ySquare][xSquare].image
     }
 }
 function mouseUp(e){
@@ -152,13 +197,10 @@ var ctx = canvas.getContext("2d");
 canvas.width=window.innerWidth/2.5;
 canvas.height=window.innerWidth/2.5;
 var board = []; var pieces = [];
-let x; let y; let isDrawing = false; let drawinglink; let Xsquare; let ySquare;
+let x; let y; let isDrawing = false; let Xsquare; let ySquare; let drawingImage
 setupBoard();
 canvas.addEventListener("mousemove", function(e){mouseMove(e)})
 canvas.addEventListener("mousedown",function(e){mouseDown(e)})
 canvas.addEventListener("mouseup",function(e){mouseUp(e)})
 console.log(board);
 console.log(pieces);
-
-//let x = Math.floor((e.clientX-rect.left)*8/canvas.width)
-//let y = Math.floor((e.clientY-rect.top)*8/canvas.height)
