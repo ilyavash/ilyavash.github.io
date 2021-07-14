@@ -43,32 +43,6 @@ function clearSquare(y,x){
 }
 
 // 1 pawn 2 knight 3 bishop 4 rook 5 queen 6 king
-/*
-class piece{
-    constructor(piece, color,y,x){
-        this.piece=piece;
-        this.color=color;
-        this.x=x;
-        this.y=y;
-        this.inital = true;
-        this.loadImage();
-        this.isDead = false
-    }
-    loadImage(){
-        //not sure why no work with just putting this.x in draw
-        let xx = this.x; let yy = this.y;
-        var image=new Image();
-        image.src=imageURL(this.piece,this.color);
-        ctx.drawImage(image,xx*(canvas.height/8),yy*canvas.width/8,canvas.width/8,canvas.height/8);
-        if (this.inital){
-            setTimeout(function() {
-            ctx.drawImage(image,xx*(canvas.height/8),yy*canvas.width/8,canvas.width/8,canvas.height/8);
-            }, 300 );
-            this.inital = false
-        }
-    }
-}
-*/
 class piece{
     constructor(piece, color,y,x){
         this.piece=piece;
@@ -86,12 +60,14 @@ class piece{
         return image;
     }
     loadImage(){
-        let xx = this.x; let yy = this.y;
-        ctx.drawImage(this.image,xx*(canvas.height/8),yy*canvas.width/8,canvas.width/8,canvas.height/8);
         if (this.inital){
-            setTimeout(function() {ctx.drawImage(image,xx*(canvas.height/8),yy*canvas.width/8,canvas.width/8,canvas.height/8);}, 30 );
+            let xx = this.x; let yy = this.y; let image = this.image
+            setTimeout(function() {
+            ctx.drawImage(image,xx*(canvas.height/8),yy*canvas.width/8,canvas.width/8,canvas.height/8);
+            }, 300 );
             this.inital = false
         }
+        ctx.drawImage(this.image,this.x*(canvas.height/8),this.y*canvas.width/8,canvas.width/8,canvas.height/8);
     }
 }
 
@@ -114,7 +90,7 @@ function mouseMove(e){
     x = e.clientX-rect.left
     y = e.clientY-rect.top
     if (isDrawing){
-        var image=new Image();
+        var image=new Image()
         image.src = drawinglink
         checkerBoard()
         pieces.forEach((e)=>{if(!e.isDead){e.loadImage()}})
