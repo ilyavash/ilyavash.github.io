@@ -13,7 +13,7 @@ x-------------->  y
 function setupBoard(){
     checkerBoard();
     for(var i=0; i<8; i++) {
-        board[i] = new Array(8)     /*i>1||i<6 ? board[i] = Array(8).fill(null) :*/ 
+        board[i] = new Array(8)
     }
     board[0][0]= new piece(4,false,0,0);  board[7][0]= new piece(4,true,7,0); board[1][0]= new piece(1,false,1,0);  board[6][0]= new piece(1,true,6,0);
     board[0][1]= new piece(2,false,0,1);  board[7][1]= new piece(2,true,7,1); board[1][1]= new piece(1,false,1,1);  board[6][1]= new piece(1,true,6,1);
@@ -75,6 +75,8 @@ class piece{
 
 function movePiece(y,x,yy,xx){
     if (y==yy&x==xx){return}
+    if(!board[y][x].color==turn){return}
+    turn = !turn;
     if(validMove(y,x).find(e=>e.x==xx&&e.y==yy)==null){return}
     clearSquare(y,x);
     if (board[yy][xx]!=null){
@@ -87,11 +89,87 @@ function movePiece(y,x,yy,xx){
     board[yy][xx].loadImage();
     board[y][x]=null;
 }
+
 // 1 pawn 2 knight 3 bishop 4 rook 5 queen 6 king
 
 function validMove(y,x){
     let piece = board[y][x]
     let validMoves = []
+    let i; let j;
+    function horseCheck(xop,yop){
+        if(xop(x)>-1&&xop(x)<8&&yop(y)>-1&&yop(y)<8&&
+        (board[yop(y)][xop(x)]==null||board[yop(y)][xop(x)].color!=board[y][x].color)){validMoves.push({y:yop(y),x:xop(x)})}
+    }
+    function diagonalCheck(xop,yop){
+        i = xop(x); j = yop(y)
+        while (-1<i&&i<8&&-1<j&&j<8){
+            if(board[j][i]==null){
+                validMoves.push({y:j,x:i})
+                i=xop(i); j=yop(j)
+            }
+            else{
+                if(board[j][i].color!=board[y][x].color){
+                    validMoves.push({y:j,x:i})
+                }
+                break;
+            }
+        }
+    }   
+    function kingCheck(xop,yop){
+        function horseAttack(xx,yy,xop,yop){
+            let xxx = xop(xx); let yyy = yop(yy)
+            if (xxx>-1&&xxx<8&&yyy>-1&&yyy<8){
+                if(board[yyy][xxx]==null){return true}
+                if(board[yyy][xxx].color!=board[y][x].color&&board[yyy][xxx].piece==2){return false}
+            }
+            return true
+        }
+        function diagonalAttack(xx,yy,xop,yop,hori){
+            let i = xop(xx); let j = yop(yy); let pawn = true;
+            const pawnColorHelper = (pawnY,kingY,kingColor) => {if(kingColor&&kingY>=pawnY||!kingColor&&kingY<=pawnY){return true}return false}
+            if (hori){pawn=false}
+            while (-1<i&&i<8&&-1<j&&j<8){
+                if(board[j][i]==null){
+                    pawn = false
+                    i = xop(i); j = yop(j)
+                    continue
+                }
+                if(board[j][i].color==board[y][x].color){
+                    break
+                }
+                if(hori&&(board[j][i].piece==4||board[j][i].piece==5||(board[j][i].piece==6&&((xx==i&&Math.abs(j-yy)<2)||(yy==j&&Math.abs(i-xx)<2))))){
+                    return false
+                }
+                if(!hori&&board[j][i].piece==3||board[j][i].piece==5||(board[j][i].piece==6&&Math.abs(j-yy)<2&&Math.abs(i-xx)<2)||(pawn&&board[j][i].piece==1&&pawnColorHelper(j,yy,board[y][x].color))){
+                    return false
+                }
+                else{break}
+            }
+            return true
+
+        }
+        let xx = xop(x); let yy = yop(y)
+        //checks for attacks from horses and horizental and vertical moves
+        if(xx>-1&&xx<8&&yy>-1&&yy<8&&(board[yy][xx]==null||board[yy][xx].color!=board[y][x].color)&&
+            horseAttack(xx,yy,(e)=>e-2,(e)=>e-1)&&
+            horseAttack(xx,yy,(e)=>e-1,(e)=>e-2)&&
+            horseAttack(xx,yy,(e)=>e-2,(e)=>e+1)&&
+            horseAttack(xx,yy,(e)=>e-1,(e)=>e+2)&&
+            horseAttack(xx,yy,(e)=>e+1,(e)=>e-2)&&
+            horseAttack(xx,yy,(e)=>e+2,(e)=>e-1)&&
+            horseAttack(xx,yy,(e)=>e+2,(e)=>e+1)&&
+            horseAttack(xx,yy,(e)=>e+1,(e)=>e+2)&&
+            diagonalAttack(xx,yy,(e)=>e+1,(e)=>e,true)&&
+            diagonalAttack(xx,yy,(e)=>e-1,(e)=>e,true)&&
+            diagonalAttack(xx,yy,(e)=>e,(e)=>e+1,true)&&
+            diagonalAttack(xx,yy,(e)=>e,(e)=>e-1,true)&&
+            diagonalAttack(xx,yy,(e)=>e+1,(e)=>e+1,false)&&
+            diagonalAttack(xx,yy,(e)=>e+1,(e)=>e-1,false)&&
+            diagonalAttack(xx,yy,(e)=>e-1,(e)=>e+1,false)&&
+            diagonalAttack(xx,yy,(e)=>e-1,(e)=>e-1,false))
+            {validMoves.push({y:yop(y),x:xop(x)})}
+    }
+
     switch(piece.piece){
         case 1:
             if (piece.color){
@@ -112,25 +190,57 @@ function validMove(y,x){
                     if(board[2][x]==null&&board[3][x]==null){validMoves.push({y:3,x:x})}
                 }
                 else{
-                    if(board[y+1][x]!=null){validMoves.push({y:y+1,x:x})}
+                    if(board[y+1][x]==null){validMoves.push({y:y+1,x:x})}
                 }
                 if (x-1!=-1&&board[y+1][x-1]!=null&&board[y+1][x-1].color){validMoves.push({y:y+1,x:x-1,})}
                 if (x+1!=8&&board[y+1][x+1]!=null&&board[y+1][x+1].color){validMoves.push({y:y+1,x:x+1})}
                 return validMoves
             }
         case 2:
-            if(y-1>-1&&x-2>-1&&(board[y-1][x-2]==null||board[y-1][x-2].color!=board[y][x].color)){validMoves.push({y:y-1,x:x-2,})}
-            if(y-2>-1&&x-1>-1&&(board[y-2][x-1]==null||board[y-2][x-1].color!=board[y][x].color)){validMoves.push({y:y-2,x:x-1,})}
-            if(y+1<8&&x-2>-1&&(board[y+1][x-2]==null||board[y+1][x-2].color!=board[y][x].color)){validMoves.push({y:y+1,x:x-2,})}
-            if(y+2<8&&x-1>-1&&(board[y+2][x-1]==null||board[y+2][x-1].color!=board[y][x].color)){validMoves.push({y:y+2,x:x-1,})}
-            if(y-2>-1&&x+1<8&&(board[y-2][x+1]==null||board[y-2][x+1].color!=board[y][x].color)){validMoves.push({y:y-2,x:x+1,})}
-            if(y-1>-1&&x+2<8&&(board[y-1][x+2]==null||board[y-1][x+2].color!=board[y][x].color)){validMoves.push({y:y-1,x:x+2,})}
-            if(y+1<8&&x+2<8&&(board[y+1][x+2]==null||board[y+1][x+2].color!=board[y][x].color)){validMoves.push({y:y+1,x:x+2,})}
-            if(y+2<8&&x+1>-1&&(board[y+2][x+1]==null||board[y+2][x+1].color!=board[y][x].color)){validMoves.push({y:y+2,x:x+1,})}
+            horseCheck((e)=>e-2,(e)=>e-1)
+            horseCheck((e)=>e-1,(e)=>e-2)
+            horseCheck((e)=>e-2,(e)=>e+1)
+            horseCheck((e)=>e-1,(e)=>e+2)
+            horseCheck((e)=>e+1,(e)=>e-2)
+            horseCheck((e)=>e+2,(e)=>e-1)
+            horseCheck((e)=>e+2,(e)=>e+1)
+            horseCheck((e)=>e+1,(e)=>e+2)
             return validMoves
         case 3:
-            
+            diagonalCheck((e)=>e+1,(e)=>e+1)
+            diagonalCheck((e)=>e+1,(e)=>e-1)
+            diagonalCheck((e)=>e-1,(e)=>e+1)
+            diagonalCheck((e)=>e-1,(e)=>e-1)
+            return validMoves
+
+        case 4:
+            diagonalCheck((e)=>e+1,(e)=>e)
+            diagonalCheck((e)=>e-1,(e)=>e)
+            diagonalCheck((e)=>e,(e)=>e+1)
+            diagonalCheck((e)=>e,(e)=>e-1)
+            return validMoves
+        case 5:
+            diagonalCheck((e)=>e+1,(e)=>e+1)
+            diagonalCheck((e)=>e+1,(e)=>e-1)
+            diagonalCheck((e)=>e-1,(e)=>e+1)
+            diagonalCheck((e)=>e-1,(e)=>e-1)
+            diagonalCheck((e)=>e+1,(e)=>e)
+            diagonalCheck((e)=>e-1,(e)=>e)
+            diagonalCheck((e)=>e,(e)=>e+1)
+            diagonalCheck((e)=>e,(e)=>e-1)
+            return validMoves
+        case 6:
+            kingCheck((e)=>e+1,(e)=>e+1)
+            kingCheck((e)=>e+1,(e)=>e)
+            kingCheck((e)=>e+1,(e)=>e-1)
+            kingCheck((e)=>e,(e)=>e+1)
+            kingCheck((e)=>e,(e)=>e-1)
+            kingCheck((e)=>e-1,(e)=>e+1)
+            kingCheck((e)=>e-1,(e)=>e)
+            kingCheck((e)=>e-1,(e)=>e-1)
+            return validMoves
     }
+
 }
 function mouseMove(e){
     let rect = canvas.getBoundingClientRect()
@@ -197,7 +307,7 @@ var ctx = canvas.getContext("2d");
 canvas.width=window.innerWidth/2.5;
 canvas.height=window.innerWidth/2.5;
 var board = []; var pieces = [];
-let x; let y; let isDrawing = false; let Xsquare; let ySquare; let drawingImage
+let x; let y; let isDrawing = false; let Xsquare; let ySquare; let drawingImage; let turn=true;
 setupBoard();
 canvas.addEventListener("mousemove", function(e){mouseMove(e)})
 canvas.addEventListener("mousedown",function(e){mouseDown(e)})
