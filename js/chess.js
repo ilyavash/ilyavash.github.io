@@ -53,6 +53,7 @@ class piece{
         this.inital = true;
         this.isDead = false
         this.image = this.importImage()
+        this.notMoved = true;
         this.loadImage()
     }
     importImage(){
@@ -73,11 +74,17 @@ class piece{
     }
 }
 
-function movePiece(y,x,yy,xx){
-    if (y==yy&x==xx){return}
-    if(!board[y][x].color==turn){return}
-    turn = !turn;
-    if(validMove(y,x).find(e=>e.x==xx&&e.y==yy)==null){return}
+function movePiece(y,x,yy,xx,castle){
+    if(castle == null){
+        if (y==yy&x==xx){return}
+        if(!board[y][x].color==turn){return}
+        if(validMove(y,x).find(e=>e.x==xx&&e.y==yy)==null){return}
+        if(board[y][x].piece==6&&Math.abs(x-xx)>1){
+            if (xx>x){movePiece(y,7,y,5,true)}
+            else{movePiece(y,0,y,3,true)}
+        }
+        turn = !turn;
+    }
     clearSquare(y,x);
     if (board[yy][xx]!=null){
         board[yy][xx].isDead = true
@@ -87,6 +94,7 @@ function movePiece(y,x,yy,xx){
     board[yy][xx].x=xx;
     clearSquare(yy,xx);
     board[yy][xx].loadImage();
+    board[yy][xx].notMoved = false;
     board[y][x]=null;
 }
 
@@ -96,6 +104,25 @@ function validMove(y,x){
     let piece = board[y][x]
     let validMoves = []
     let i; let j;
+
+    function castle(color){
+        if (color){
+            if(piece.notMoved&&board[7][7]!=null&&board[7][7].notMoved&&board[7][7].piece==4&&board[7][5]==null&&board[7][6]==null&&kingCheck((e)=>e+2,(e)=>e)){
+                validMoves.push({y:7,x:6})
+            }
+            if(piece.notMoved&&board[7][0]!=null&&board[7][0].notMoved&&board[7][0].piece==4&&board[7][3]==null&&board[7][2]==null&&kingCheck((e)=>e-2,(e)=>e)&&kingCheck((e)=>e-3,(e)=>e)){
+                validMoves.push({y:7,x:1})
+            }
+        }
+        else{
+            if(piece.notMoved&&board[0][7]!=null&&board[0][7].notMoved&&board[0][7].piece==4&&board[0][5]==null&&board[0][6]==null&&kingCheck((e)=>e+2,(e)=>e)){
+                validMoves.push({y:0,x:6})
+            }
+            if(piece.notMoved&&board[0][0]!=null&&board[0][0].notMoved&&board[0][0].piece==4&&board[0][3]==null&&board[0][2]==null&&kingCheck((e)=>e-2,(e)=>e)&&kingCheck((e)=>e-3,(e)=>e)){
+                validMoves.push({y:0,x:1})
+            }  
+        }
+    }
     function horseCheck(xop,yop){
         if(xop(x)>-1&&xop(x)<8&&yop(y)>-1&&yop(y)<8&&
         (board[yop(y)][xop(x)]==null||board[yop(y)][xop(x)].color!=board[y][x].color)){validMoves.push({y:yop(y),x:xop(x)})}
@@ -238,9 +265,9 @@ function validMove(y,x){
             kingCheck((e)=>e-1,(e)=>e+1)
             kingCheck((e)=>e-1,(e)=>e)
             kingCheck((e)=>e-1,(e)=>e-1)
+            castle(piece.color)
             return validMoves
     }
-
 }
 function mouseMove(e){
     let rect = canvas.getBoundingClientRect()
