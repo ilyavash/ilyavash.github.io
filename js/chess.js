@@ -24,6 +24,7 @@ function setupBoard(){
     board[0][6]= new piece(2,false,0,6);  board[7][6]= new piece(2,true,7,6); board[1][6]= new piece(1,false,1,6);  board[6][6]= new piece(1,true,6,6);
     board[0][7]= new piece(4,false,0,7);  board[7][7]= new piece(4,true,7,7); board[1][7]= new piece(1,false,1,7);  board[6][7]= new piece(1,true,6,7);
     board[0].forEach((e)=>pieces.push(e)); board[7].forEach((e)=>pieces.push(e)); board[1].forEach((e)=>pieces.push(e)); board[6].forEach((e)=>pieces.push(e))
+    whiteKing = pieces[12]; blackKing = pieces[4]
 }
 
 function checkerBoard(){
@@ -41,7 +42,12 @@ function clearSquare(y,x){
     (y%2==0&&x%2==0)||(y%2!=0&&x%2!=0) ? ctx.fillStyle='white': ctx.fillStyle='#2E2934'
     ctx.fillRect(x*canvas.width/8,y*canvas.width/8,canvas.width/8,canvas.height/8);
 }
-
+function boardCopy(oldBoard){
+    var newBoard = oldBoard.map(function(arr) {
+        return arr.slice();
+    });
+    return newBoard
+}
 // 1 pawn 2 knight 3 bishop 4 rook 5 queen 6 king
 class piece{
     constructor(piece, color,y,x){
@@ -73,6 +79,7 @@ class piece{
     }
 }
 function movePiece(y,x,yy,xx,castle){
+    let backupPiece = board[yy][xx]
     if(castle == null){
         if (y==yy&x==xx){return}
         if(board[y][x]==null){return}
@@ -113,10 +120,31 @@ function movePiece(y,x,yy,xx,castle){
     board[yy][xx].loadImage();
     board[yy][xx].notMoved = false;
     board[y][x]=null;
+    //checks if piece is in checkmate
+    if (!turn){
+        if(validMove(whiteKing.y,whiteKing.x,true).length==0){
+            board[y][x]=board[yy][xx]; board[y][x].y=y;board[y][x].x=x
+            board[yy][xx]=backupPiece
+            if(board[yy][xx]!=null){board[yy][xx].isDead=false}
+            checkerBoard()
+            pieces.forEach((e)=>{if(!e.isDead){e.loadImage()}})
+            turn=!turn
+        }
+    }
+    else{
+        if(validMove(blackKing.y,blackKing.x,true).length==0){
+            board[y][x]=board[yy][xx]; board[y][x].y=y;board[y][x].x=x
+            if(board[yy][xx]!=null){board[yy][xx].isDead=false}
+            board[yy][xx].isDead=false
+            checkerBoard()
+            pieces.forEach((e)=>{if(!e.isDead){e.loadImage()}})
+            turn=!turn
+        }
+    }
 }
 
 // 1 pawn 2 knight 3 bishop 4 rook 5 queen 6 king
-function validMove(y,x){
+function validMove(y,x,checkmate){
     let piece = board[y][x]
     let validMoves = []
     let i; let j;
@@ -176,6 +204,10 @@ function validMove(y,x){
                     i = xop(i); j = yop(j)
                     continue
                 }
+                if(board[j][i].piece==6&&board[j][i].color==board[y][x].color){
+                    i = xop(i); j = yop(j)
+                    continue
+                }
                 if(board[j][i].color==board[y][x].color){
                     break
                 }
@@ -192,7 +224,7 @@ function validMove(y,x){
         }
         let xx = xop(x); let yy = yop(y)
         //checks for attacks from horses and horizental and vertical moves
-        if(xx>-1&&xx<8&&yy>-1&&yy<8&&(board[yy][xx]==null||board[yy][xx].color!=board[y][x].color)&&
+        if(xx>-1&&xx<8&&yy>-1&&yy<8&&(board[yy][xx]==null||(board[yy][xx].color!=board[y][x].color)||board[yy][xx].y==yy&&board[yy][xx].x==x)&&
             horseAttack(xx,yy,(e)=>e-2,(e)=>e-1)&&
             horseAttack(xx,yy,(e)=>e-1,(e)=>e-2)&&
             horseAttack(xx,yy,(e)=>e-2,(e)=>e+1)&&
@@ -211,7 +243,6 @@ function validMove(y,x){
             diagonalAttack(xx,yy,(e)=>e-1,(e)=>e-1,false))
             {validMoves.push({y:yop(y),x:xop(x)})}
     }
-
     switch(piece.piece){
         case 1:
             if (piece.color){
@@ -272,6 +303,10 @@ function validMove(y,x){
             diagonalCheck((e)=>e,(e)=>e-1)
             return validMoves
         case 6:
+            if(checkmate){
+                kingCheck((e)=>e,(e)=>e)
+                return validMoves
+            }
             kingCheck((e)=>e+1,(e)=>e+1)
             kingCheck((e)=>e+1,(e)=>e)
             kingCheck((e)=>e+1,(e)=>e-1)
@@ -365,7 +400,6 @@ function mouseUp(e){
     pieces.forEach((e)=>{if(!e.isDead){e.loadImage()}})
 }
 
-
 //color:true==white // 1 pawn 2 knight 3 bishop 4 rook 5 queen 6 king
 function imageURL(piece,color){
     if (color){
@@ -404,7 +438,8 @@ function imageURL(piece,color){
 //variables
 let x; let y; let isDrawing = false; let Xsquare; 
 let ySquare; let drawingImage; let turn=true; let promotion = false;
-let promoteY = null; let promoteX = null;
+let promoteY = null; let promoteX = null; 
+let whiteKing; let blackKing;
 
 const canvas = document.querySelector('canvas');
 var ctx = canvas.getContext("2d");
