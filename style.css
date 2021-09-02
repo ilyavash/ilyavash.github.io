@@ -16,6 +16,24 @@ div {text-align: center;color:white}
     background-color:	#446969 ;
     border-color: #446969;
 }
+.newGameButton{
+  /*display: block;*/
+  margin-left: 25%;
+  width: 10%;
+  background-color:	#446969 ;
+  border-color: #446969;
+}
+.joinGameButton{
+  /*display: block;*/
+  float:right;
+  margin-inline-start: 20.2%;
+  width: 10%;
+  background-color:	#446969 ;
+  border-color: #446969;
+}
+.buttons{
+  display: inline;
+}
 #canvas{
   background-color: #446969;
   margin-left: auto;
