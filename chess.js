@@ -78,8 +78,8 @@ class piece{
     }
 }
 function movePiece(y,x,yy,xx,castle){
+    if (clientColor!=turn||clientColor==null){return;}
     let backupPiece = board[yy][xx]
-    debugger
     if(castle == null){
         if (y==yy&x==xx){return}
         if(board[y][x]==null){return}
@@ -87,8 +87,14 @@ function movePiece(y,x,yy,xx,castle){
         if(validMove(y,x).find(e=>e.x==xx&&e.y==yy)==null){return}
         //castle
         if(board[y][x].piece==6&&Math.abs(x-xx)>1){
-            if (xx>x){movePiece(y,7,y,5,true)}
-            else{movePiece(y,0,y,3,true)}
+            if (xx>x){
+                movePiece(y,7,y,5,true)
+                ws.send(JSON.stringify({method:'movePiece',move:'castle',x:x,y:y,xx:xx,yy:yy,gameID:gameID,clientID:clientID}))
+            }
+            else{
+                movePiece(y,0,y,3,true)
+                ws.send(JSON.stringify({method:'movePiece',move:'castle',x:x,y:y,xx:xx,yy:yy,gameID:gameID,clientID:clientID}))
+            }
         }
         //promotion
         if(board[y][x].piece==1&&(yy==7||yy==0)){
@@ -97,14 +103,16 @@ function movePiece(y,x,yy,xx,castle){
             pieces.forEach((e)=>{if(!e.isDead){e.loadImage()}})
             clearSquare(y,x);
             //////
-            promotePiece(yy,xx)
             if (board[yy][xx]!=null){
                 board[yy][xx].isDead = true
             }
-            board[yy][xx]=board[y][x];
-            board[yy][xx].y=yy;
-            board[yy][xx].x=xx;
-            board[y][x]=null;
+            board[yy][xx]=board[y][x]
+            board[yy][xx].y=yy
+            board[yy][xx].x=xx
+            board[y][x]=null
+            if (checkmateCheck===false){return}
+            promotePiece(yy,xx)
+            socketPromoteX=x; socketPromoteY=y
             return;
         }
         turn = !turn;
@@ -120,44 +128,49 @@ function movePiece(y,x,yy,xx,castle){
     board[yy][xx].loadImage();
     board[yy][xx].notMoved = false;
     board[y][x]=null;
+    checkmateCheck()
+    ws.send(JSON.stringify({method:'movePiece',move:'move',x:x,y:y,xx:xx,yy:yy,gameID:gameID,clientID:clientID}))
     //checks if piece is in checkmate
-    if (!turn){
-        if(validMove(whiteKing.y,whiteKing.x,true).length==0){
-            board[y][x]=board[yy][xx]; board[y][x].y=y;board[y][x].x=x
-            board[yy][xx]=backupPiece
-            if(board[yy][xx]!=null){board[yy][xx].isDead=false}
-            checkerBoard()
-            pieces.forEach((e)=>{if(!e.isDead){e.loadImage()}})
-            turn=!turn
+    function checkmateCheck(){
+        if (!turn){
+            if(validMove(whiteKing.y,whiteKing.x,true).length==0){
+                board[y][x]=board[yy][xx]; board[y][x].y=y;board[y][x].x=x
+                board[yy][xx]=backupPiece
+                if(board[yy][xx]!=null){board[yy][xx].isDead=false}
+                checkerBoard()
+                pieces.forEach((e)=>{if(!e.isDead){e.loadImage()}})
+                turn=!turn
+                return false
+            }
+            else{
+                if(validMove(blackKing.y,blackKing.x,true).length==0){
+                    redSquareX = blackKing.x; redSquareY = blackKing.y
+                }
+                else{
+                    redSquareX = -1; redSquareY = -1
+                }
+            }
         }
         else{
             if(validMove(blackKing.y,blackKing.x,true).length==0){
-                redSquareX = blackKing.x; redSquareY = blackKing.y
+                board[y][x]=board[yy][xx]; board[y][x].y=y;board[y][x].x=x
+                board[yy][xx]=backupPiece
+                if(board[yy][xx]!=null){board[yy][xx].isDead=false}
+                checkerBoard()
+                pieces.forEach((e)=>{if(!e.isDead){e.loadImage()}})
+                turn=!turn
+                return false
             }
             else{
-                redSquareX = -1; redSquareY = -1
+                if(validMove(whiteKing.y,whiteKing.x,true).length==0){
+                    redSquareX = whiteKing.x; redSquareY = whiteKing.y
+                }
+                else{
+                    redSquareX = -1; redSquareY = -1
+                }
             }
         }
     }
-    else{
-        if(validMove(blackKing.y,blackKing.x,true).length==0){
-            board[y][x]=board[yy][xx]; board[y][x].y=y;board[y][x].x=x
-            board[yy][xx]=backupPiece
-            if(board[yy][xx]!=null){board[yy][xx].isDead=false}
-            checkerBoard()
-            pieces.forEach((e)=>{if(!e.isDead){e.loadImage()}})
-            turn=!turn
-        }
-        else{
-            if(validMove(whiteKing.y,whiteKing.x,true).length==0){
-                redSquareX = whiteKing.x; redSquareY = whiteKing.y
-            }
-            else{
-                redSquareX = -1; redSquareY = -1
-            }
-        }
-    }
-
 
 }
 // 1 pawn 2 knight 3 bishop 4 rook 5 queen 6 king
@@ -375,6 +388,7 @@ function mouseDown(e){
             board[promoteY][promoteX].color?board[promoteY][promoteX].image=pieces[8].image:board[promoteY][promoteX].image=pieces[0].image
             promotion=false
             turn = !turn
+            ws.send(JSON.stringify({method:'movePiece',move:'promotion',x:socketPromoteX,y:socketPromoteY,xx:promoteX,yy:promoteY,piece:4,gameID:gameID,clientID:clientID}))
             return
         }
         if(x>promoteX*canvas.width/8+canvas.width/16&&x<promoteX*canvas.width/8+canvas.width/8&&y>promoteY*canvas.height/8&&y<promoteY*canvas.height/8+canvas.height/16){
@@ -382,6 +396,7 @@ function mouseDown(e){
             board[promoteY][promoteX].color?board[promoteY][promoteX].image=pieces[9].image:board[promoteY][promoteX].image=pieces[1].image
             promotion=false
             turn = !turn
+            ws.send(JSON.stringify({method:'movePiece',move:'promotion',x:socketPromoteX,y:socketPromoteY,xx:promoteX,yy:promoteY,piece:2,gameID:gameID,clientID:clientID}))
             return
         }
         if(x>promoteX*canvas.width/8&&x<promoteX*canvas.width/8+canvas.width/16&&y>promoteY*canvas.height/8+canvas.height/16&&y<promoteY*canvas.height/8+canvas.height/8){
@@ -389,6 +404,7 @@ function mouseDown(e){
             board[promoteY][promoteX].color?board[promoteY][promoteX].image=pieces[10].image:board[promoteY][promoteX].image=pieces[2].image
             promotion=false
             turn = !turn
+            ws.send(JSON.stringify({method:'movePiece',move:'promotion',x:socketPromoteX,y:socketPromoteY,xx:promoteX,yy:promoteY,piece:3,gameID:gameID,clientID:clientID}))
             return
         }
         if(x>promoteX*canvas.width/8+canvas.width/16&&x<promoteX*canvas.width/8+canvas.width/8&&y>promoteY*canvas.width/8+canvas.width/16&&y<promoteY*canvas.width/8+canvas.width/8){
@@ -396,19 +412,20 @@ function mouseDown(e){
             board[promoteY][promoteX].color?board[promoteY][promoteX].image=pieces[11].image:board[promoteY][promoteX].image=pieces[3].image
             promotion=false
             turn = !turn
+            ws.send(JSON.stringify({method:'movePiece',move:'promotion',x:socketPromoteX,y:socketPromoteY,xx:promoteX,yy:promoteY,piece:5,gameID:gameID,clientID:clientID}))
             return
         }
         return
     }
     xSquare = Math.floor((x)*8/canvas.width)
-    ySquare = Math.floor((y)*8/canvas.height)
-    if (board[ySquare][xSquare]!=null){
+    Ysquare = Math.floor((y)*8/canvas.height)
+    if (board[Ysquare][xSquare]!=null){
         isDrawing = true
-        drawingImage = board[ySquare][xSquare].image
+        drawingImage = board[Ysquare][xSquare].image
     }
 }
 function mouseUp(e){
-    movePiece(ySquare,xSquare,Math.floor((y)*8/canvas.width),Math.floor((x)*8/canvas.width))
+    movePiece(Ysquare,xSquare,Math.floor((y)*8/canvas.width),Math.floor((x)*8/canvas.width))
     isDrawing = false
     if(promotion){
         return
@@ -451,16 +468,63 @@ function imageURL(piece,color){
     }
 }
 
+function webSocketMoveHelper(e){
+    console.log("we here")
+    if(e.move==='move'){
+        if (board[e.yy][e.xx]!=null){
+            board[e.yy][e.xx].isDead = true
+        }
+        board[e.yy][e.xx]=board[e.y][e.x]
+        board[e.yy][e.xx].y=e.yy
+        board[e.yy][e.xx].x=e.xx
+        board[e.y][e.x]=null
+    }
+    if(e.move==='promotion'){
+        if (board[e.yy][e.xx]!=null){
+            board[e.yy][e.xx].isDead = true
+        }
+        board[e.yy][e.xx]=board[e.y][e.x]
+        board[e.yy][e.xx].y=e.yy
+        board[e.yy][e.xx].x=e.xx
+        board[e.y][e.x]=null
+        board[e.y][e.x].piece=e.piece
+    }
+    if(e.move==='castle'){
+        board[e.yy][e.xx]=board[e.y][e.x]
+        board[e.yy][e.xx].y=e.yy
+        board[e.yy][e.xx].x=e.xx
+        board[e.y][e.x]=null
+        if(e.xx<4){
+            board[e.yy][3]=board[e.yy][0]
+            board[e.yy][0]=null
+        }
+        else{
+            board[yy][5]=board[yy][7]
+            board[yy][7]=null
+        }
+    }
+    turn=!turn
+    checkerBoard()
+    pieces.forEach((e)=>{if(!e.isDead){e.loadImage()}})
+}
+
 //Server stuff
 let ws = new WebSocket("ws://localhost:9090")
-
+ws.onmessage = message => {
+    const result = JSON.parse(message.data)
+    console.log(result)
+    if(result.method==='movePiece'){
+        webSocketMoveHelper(result)
+    }
+}
 
 //bootup 
 //variables
 let x; let y; let isDrawing = false; let Xsquare; 
-let ySquare; let drawingImage; let turn=true; let promotion = false;
-let promoteY = null; let promoteX = null; 
+let Ysquare; let drawingImage; let turn=true; let promotion = false;
+let promoteY = null; let promoteX = null; let socketPromoteX; let socketPromoteY;
 let whiteKing; let blackKing; let redSquareX = -1; let redSquareY = -1;
+let clientColor = null; let clientID =null; let gameID = null;
 
 const canvas = document.querySelector('canvas');
 var ctx = canvas.getContext("2d");
@@ -472,3 +536,32 @@ setupBoard();
 canvas.addEventListener("mousemove",function(e){mouseMove(e)})
 canvas.addEventListener("mousedown",function(e){mouseDown(e)})
 canvas.addEventListener("mouseup",function(e){mouseUp(e)})
+
+//button functions
+
+document.getElementById("newGameButton").onclick = function(){
+    gameID=guid()
+    clientID=guid()
+    clientColor=true
+    console.log(gameID)
+    ws.send(JSON.stringify({method:'create',gameID:gameID,clientID:clientID}))
+}
+document.getElementById("joinGameButton").onclick = function(){
+    let codeInfo = window.prompt("Enter Game Id");
+    if (codeInfo == null || codeInfo == ""){
+        return;
+    }
+    else{
+        gameID = codeInfo
+        clientID=guid()
+        clientColor=false
+        ws.send(JSON.stringify({method:"join",gameID:codeInfo,clientID:clientID}))
+    }
+}
+
+function S4() {
+    return (((1+Math.random())*0x10000)|0).toString(16).substring(1); 
+}
+ 
+// then to call it, plus stitch in '4' in the third group
+const guid = () => (S4() + S4() + "-" + S4() + "-4" + S4().substr(0,3) + "-" + S4() + "-" + S4() + S4() + S4()).toLowerCase();
