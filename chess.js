@@ -574,7 +574,7 @@ function webSocketMoveHelper(e){
 }
 
 //Server stuff
-let ws = new WebSocket("ws://localhost:9090")
+let ws = new WebSocket("wss://ilyavash.github.io/chess.html")
 ws.onmessage = message => {
     const result = JSON.parse(message.data)
     if(result.method==='movePiece'){
