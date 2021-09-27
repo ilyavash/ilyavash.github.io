@@ -96,7 +96,6 @@ function movePiece(y,x,yy,xx,castle){
             booleanForCastle = false
             if (xx>x){
                 movePiece(y,7,y,5,true)
-                console.log(x,y,xx,yy)
                 connectionLink.send(JSON.stringify({method:'movePiece',move:'castle',x:x,y:y,xx:xx,yy:yy,gameID:gameID,clientID:clientID}))
             }
             else{
@@ -541,9 +540,7 @@ function imageURL(piece,color){
 }
 
 function onlineHelper(e){
-    console.log(e)
     if(e.move==='move'){
-        console.log("move checker")
         if (board[e.yy][e.xx]!=null){
             board[e.yy][e.xx].isDead = true
         }
