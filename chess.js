@@ -97,11 +97,11 @@ function movePiece(y,x,yy,xx,castle){
             if (xx>x){
                 movePiece(y,7,y,5,true)
                 console.log(x,y,xx,yy)
-                ws.send(JSON.stringify({method:'movePiece',move:'castle',x:x,y:y,xx:xx,yy:yy,gameID:gameID,clientID:clientID}))
+                connectionLink.send(JSON.stringify({method:'movePiece',move:'castle',x:x,y:y,xx:xx,yy:yy,gameID:gameID,clientID:clientID}))
             }
             else{
                 movePiece(y,0,y,3,true)
-                ws.send(JSON.stringify({method:'movePiece',move:'castle',x:x,y:y,xx:xx,yy:yy,gameID:gameID,clientID:clientID}))
+                connectionLink.send(JSON.stringify({method:'movePiece',move:'castle',x:x,y:y,xx:xx,yy:yy,gameID:gameID,clientID:clientID}))
             }
         }
         //promotion
@@ -138,7 +138,7 @@ function movePiece(y,x,yy,xx,castle){
     board[y][x]=null;
     if(!checkmateCheck()){return}
     if (booleanForCastle){
-        ws.send(JSON.stringify({method:'movePiece',move:'move',x:x,y:y,xx:xx,yy:yy,gameID:gameID,clientID:clientID}))
+        connectionLink.send(JSON.stringify({method:'movePiece',move:'move',x:x,y:y,xx:xx,yy:yy,gameID:gameID,clientID:clientID}))
     }
     //checks if piece is in checkmate
     function checkmateCheck(){
@@ -419,7 +419,7 @@ function mouseDown(e){
                 board[promoteY][promoteX].color?board[promoteY][promoteX].image=pieces[8].image:board[promoteY][promoteX].image=pieces[0].image
                 promotion=false
                 turn = !turn
-                ws.send(JSON.stringify({method:'movePiece',move:'promotion',x:socketPromoteX,y:socketPromoteY,xx:promoteX,yy:promoteY,piece:4,imageHelper1:8,imageHelper2:0,gameID:gameID,clientID:clientID}))
+                connectionLink.send(JSON.stringify({method:'movePiece',move:'promotion',x:socketPromoteX,y:socketPromoteY,xx:promoteX,yy:promoteY,piece:4,imageHelper1:8,imageHelper2:0,gameID:gameID,clientID:clientID}))
                 return
             }
             if(x>promoteX*canvas.width/8+canvas.width/16&&x<promoteX*canvas.width/8+canvas.width/8&&y>promoteY*canvas.height/8&&y<promoteY*canvas.height/8+canvas.height/16){
@@ -427,7 +427,7 @@ function mouseDown(e){
                 board[promoteY][promoteX].color?board[promoteY][promoteX].image=pieces[9].image:board[promoteY][promoteX].image=pieces[1].image
                 promotion=false
                 turn = !turn
-                ws.send(JSON.stringify({method:'movePiece',move:'promotion',x:socketPromoteX,y:socketPromoteY,xx:promoteX,yy:promoteY,piece:2,imageHelper1:9,imageHelper2:1,gameID:gameID,clientID:clientID}))
+                connectionLink.send(JSON.stringify({method:'movePiece',move:'promotion',x:socketPromoteX,y:socketPromoteY,xx:promoteX,yy:promoteY,piece:2,imageHelper1:9,imageHelper2:1,gameID:gameID,clientID:clientID}))
                 return
             }
             if(x>promoteX*canvas.width/8&&x<promoteX*canvas.width/8+canvas.width/16&&y>promoteY*canvas.height/8+canvas.height/16&&y<promoteY*canvas.height/8+canvas.height/8){
@@ -435,7 +435,7 @@ function mouseDown(e){
                 board[promoteY][promoteX].color?board[promoteY][promoteX].image=pieces[10].image:board[promoteY][promoteX].image=pieces[2].image
                 promotion=false
                 turn = !turn
-                ws.send(JSON.stringify({method:'movePiece',move:'promotion',x:socketPromoteX,y:socketPromoteY,xx:promoteX,yy:promoteY,piece:3,imageHelper1:10,imageHelper2:2,gameID:gameID,clientID:clientID}))
+                connectionLink.send(JSON.stringify({method:'movePiece',move:'promotion',x:socketPromoteX,y:socketPromoteY,xx:promoteX,yy:promoteY,piece:3,imageHelper1:10,imageHelper2:2,gameID:gameID,clientID:clientID}))
                 return
             }
             if(x>promoteX*canvas.width/8+canvas.width/16&&x<promoteX*canvas.width/8+canvas.width/8&&y>promoteY*canvas.width/8+canvas.width/16&&y<promoteY*canvas.width/8+canvas.width/8){
@@ -443,7 +443,7 @@ function mouseDown(e){
                 board[promoteY][promoteX].color?board[promoteY][promoteX].image=pieces[11].image:board[promoteY][promoteX].image=pieces[3].image
                 promotion=false
                 turn = !turn
-                ws.send(JSON.stringify({method:'movePiece',move:'promotion',x:socketPromoteX,y:socketPromoteY,xx:promoteX,yy:promoteY,piece:5,imageHelper1:11,imageHelper2:3,gameID:gameID,clientID:clientID}))
+                connectionLink.send(JSON.stringify({method:'movePiece',move:'promotion',x:socketPromoteX,y:socketPromoteY,xx:promoteX,yy:promoteY,piece:5,imageHelper1:11,imageHelper2:3,gameID:gameID,clientID:clientID}))
                 return
             }
         }
@@ -453,7 +453,7 @@ function mouseDown(e){
                 board[promoteY][promoteX].color?board[promoteY][promoteX].image=pieces[8].image:board[promoteY][promoteX].image=pieces[0].image
                 promotion=false
                 turn = !turn
-                ws.send(JSON.stringify({method:'movePiece',move:'promotion',x:socketPromoteX,y:socketPromoteY,xx:promoteX,yy:promoteY,piece:4,imageHelper1:8,imageHelper2:0,gameID:gameID,clientID:clientID}))
+                connectionLink.send(JSON.stringify({method:'movePiece',move:'promotion',x:socketPromoteX,y:socketPromoteY,xx:promoteX,yy:promoteY,piece:4,imageHelper1:8,imageHelper2:0,gameID:gameID,clientID:clientID}))
                 return
             }
             if(x>(7-promoteX)*canvas.width/8+canvas.width/16&&x<(7-promoteX)*canvas.width/8+canvas.width/8&&y>(7-promoteY)*canvas.height/8&&y<(7-promoteY)*canvas.height/8+canvas.height/16){
@@ -461,7 +461,7 @@ function mouseDown(e){
                 board[promoteY][promoteX].color?board[promoteY][promoteX].image=pieces[9].image:board[promoteY][promoteX].image=pieces[1].image
                 promotion=false
                 turn = !turn
-                ws.send(JSON.stringify({method:'movePiece',move:'promotion',x:socketPromoteX,y:socketPromoteY,xx:promoteX,yy:promoteY,piece:2,imageHelper1:9,imageHelper2:1,gameID:gameID,clientID:clientID}))
+                connectionLink.send(JSON.stringify({method:'movePiece',move:'promotion',x:socketPromoteX,y:socketPromoteY,xx:promoteX,yy:promoteY,piece:2,imageHelper1:9,imageHelper2:1,gameID:gameID,clientID:clientID}))
                 return
             }
             if(x>(7-promoteX)*canvas.width/8&&x<(7-promoteX)*canvas.width/8+canvas.width/16&&y>(7-promoteY)*canvas.height/8+canvas.height/16&&y<(7-promoteY)*canvas.height/8+canvas.height/8){
@@ -469,7 +469,7 @@ function mouseDown(e){
                 board[promoteY][promoteX].color?board[promoteY][promoteX].image=pieces[10].image:board[promoteY][promoteX].image=pieces[2].image
                 promotion=false
                 turn = !turn
-                ws.send(JSON.stringify({method:'movePiece',move:'promotion',x:socketPromoteX,y:socketPromoteY,xx:promoteX,yy:promoteY,piece:3,imageHelper1:10,imageHelper2:2,gameID:gameID,clientID:clientID}))
+                connectionLink.send(JSON.stringify({method:'movePiece',move:'promotion',x:socketPromoteX,y:socketPromoteY,xx:promoteX,yy:promoteY,piece:3,imageHelper1:10,imageHelper2:2,gameID:gameID,clientID:clientID}))
                 return
             }
             if(x>(7-promoteX)*canvas.width/8+canvas.width/16&&x<(7-promoteX)*canvas.width/8+canvas.width/8&&y>(7-promoteY)*canvas.width/8+canvas.width/16&&y<(7-promoteY)*canvas.width/8+canvas.width/8){
@@ -477,7 +477,7 @@ function mouseDown(e){
                 board[promoteY][promoteX].color?board[promoteY][promoteX].image=pieces[11].image:board[promoteY][promoteX].image=pieces[3].image
                 promotion=false
                 turn = !turn
-                ws.send(JSON.stringify({method:'movePiece',move:'promotion',x:socketPromoteX,y:socketPromoteY,xx:promoteX,yy:promoteY,piece:5,imageHelper1:11,imageHelper2:3,gameID:gameID,clientID:clientID}))
+                connectionLink.send(JSON.stringify({method:'movePiece',move:'promotion',x:socketPromoteX,y:socketPromoteY,xx:promoteX,yy:promoteY,piece:5,imageHelper1:11,imageHelper2:3,gameID:gameID,clientID:clientID}))
                 return
             }
         }
@@ -540,8 +540,10 @@ function imageURL(piece,color){
     }
 }
 
-function webSocketMoveHelper(e){
+function onlineHelper(e){
+    console.log(e)
     if(e.move==='move'){
+        console.log("move checker")
         if (board[e.yy][e.xx]!=null){
             board[e.yy][e.xx].isDead = true
         }
@@ -574,13 +576,15 @@ function webSocketMoveHelper(e){
 }
 
 //Server stuff
-let ws = new WebSocket("wss://ilyavash.github.io/chess.html")
-ws.onmessage = message => {
-    const result = JSON.parse(message.data)
-    if(result.method==='movePiece'){
-        webSocketMoveHelper(result)
-    }
-}
+var peer = new Peer()
+var connectionLink
+peer.on('connection', function(conn) {
+    connectionLink = conn
+    conn.on('open', function() {
+    conn.on('data', function(data) {
+        const result = JSON.parse(data)
+        onlineHelper(result)
+    })})});
 
 //bootup 
 //variables
@@ -604,11 +608,8 @@ canvas.addEventListener("mouseup",function(e){mouseUp(e)})
 //button functions
 
 document.getElementById("newGameButton").onclick = function(){
-    gameID=guid()
-    clientID=guid()
-    clientColor=true
-    console.log(gameID)
-    ws.send(JSON.stringify({method:'create',gameID:gameID,clientID:clientID}))
+    console.log(peer.id)
+    clientColor = true
 }
 document.getElementById("joinGameButton").onclick = function(){
     let codeInfo = window.prompt("Enter Game Id");
@@ -616,18 +617,14 @@ document.getElementById("joinGameButton").onclick = function(){
         return;
     }
     else{
-        gameID = codeInfo
-        clientID=guid()
-        clientColor=false
-        checkerBoard()
-        pieces.forEach((e)=>{if(!e.isDead){e.loadImage()}})
-        ws.send(JSON.stringify({method:"join",gameID:codeInfo,clientID:clientID}))
+        clientColor= false
+        conn = peer.connect(codeInfo);
+        connectionLink = conn
+        conn.on('open', function() {
+            conn.on('data', function(data) {
+                const result = JSON.parse(data)
+                onlineHelper(result)
+            });
+          });
     }
 }
-
-function S4() {
-    return (((1+Math.random())*0x10000)|0).toString(16).substring(1); 
-}
- 
-// then to call it, plus stitch in '4' in the third group
-const guid = () => (S4() + S4() + "-" + S4() + "-4" + S4().substr(0,3) + "-" + S4() + "-" + S4() + S4() + S4()).toLowerCase();
