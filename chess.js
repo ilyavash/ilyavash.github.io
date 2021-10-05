@@ -31,7 +31,10 @@ function checkerBoard(){
     var mark = true;
         for (var i=0;i<9;i++){
             for(var j=0;j<9;j++){
-                if (i == redSquareX && j == redSquareY){
+                if (clientColor&& i == redSquareX && j == redSquareY){
+                    ctx.fillStyle='red'
+                }
+                else if(!clientColor&& i == 7 - redSquareX && j == 7- redSquareY) {
                     ctx.fillStyle='red'
                 }
                 else{
@@ -154,9 +157,11 @@ function movePiece(y,x,yy,xx,castle){
             else{
                 if(validMove(blackKing.y,blackKing.x,true).length==0){
                     redSquareX = blackKing.x; redSquareY = blackKing.y
+                    connectionLink.send(JSON.stringify({method:'redSquare',move:'redSquares',redSquareX:redSquareX,redSquareY:redSquareY,gameID:gameID,clientID:clientID}))
                 }
                 else{
                     redSquareX = -1; redSquareY = -1
+                    connectionLink.send(JSON.stringify({method:'redSquare',move:'redSquares',redSquareX:redSquareX,redSquareY:redSquareY,gameID:gameID,clientID:clientID}))
                 }
                 return true
             }
@@ -174,9 +179,11 @@ function movePiece(y,x,yy,xx,castle){
             else{
                 if(validMove(whiteKing.y,whiteKing.x,true).length==0){
                     redSquareX = whiteKing.x; redSquareY = whiteKing.y
+                    connectionLink.send(JSON.stringify({method:'redSquare',move:'redSquares',redSquareX:redSquareX,redSquareY:redSquareY,gameID:gameID,clientID:clientID}))
                 }
                 else{
                     redSquareX = -1; redSquareY = -1
+                    connectionLink.send(JSON.stringify({method:'redSquare',move:'redSquares',redSquareX:redSquareX,redSquareY:redSquareY,gameID:gameID,clientID:clientID}))
                 }
                 return true
             }
@@ -540,6 +547,12 @@ function imageURL(piece,color){
 }
 
 function onlineHelper(e){
+    if (e.move === 'redSquares'){
+        redSquareX = e.redSquareX
+        redSquareY = e.redSquareY
+        checkerBoard()
+        return;
+    }
     if(e.move==='move'){
         if (board[e.yy][e.xx]!=null){
             board[e.yy][e.xx].isDead = true
@@ -605,7 +618,7 @@ canvas.addEventListener("mouseup",function(e){mouseUp(e)})
 //button functions
 
 document.getElementById("newGameButton").onclick = function(){
-    console.log(peer.id)
+    alert("Sent this code to player2:    "+peer.id)
     clientColor = true
 }
 document.getElementById("joinGameButton").onclick = function(){
