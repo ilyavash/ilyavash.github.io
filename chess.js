@@ -25,6 +25,7 @@ function setupBoard(){
     board[0][7]= new piece(4,false,0,7);  board[7][7]= new piece(4,true,7,7); board[1][7]= new piece(1,false,1,7);  board[6][7]= new piece(1,true,6,7);
     board[0].forEach((e)=>pieces.push(e)); board[7].forEach((e)=>pieces.push(e)); board[1].forEach((e)=>pieces.push(e)); board[6].forEach((e)=>pieces.push(e))
     whiteKing = pieces[12]; blackKing = pieces[4]
+    pieces.forEach((e)=>e.loadImage())
 }
 
 function checkerBoard(){
@@ -60,12 +61,11 @@ class piece{
         this.inital = true;
         this.isDead = false
         this.image = this.importImage()
-        this.notMoved = true;
-        this.loadImage()
+        this.notMoved = true
     }
     importImage(){
         var image=new Image();
-        image.src=imageURL(this.piece,this.color);
+        image.src= imageURL(this.piece,this.color);
         return image;
     }
     loadImage(){
@@ -610,6 +610,7 @@ canvas.width=window.innerWidth/2.5;
 canvas.height=window.innerWidth/2.5;
 var board = []; var pieces = [];
 setupBoard();
+
 
 canvas.addEventListener("mousemove",function(e){mouseMove(e)})
 canvas.addEventListener("mousedown",function(e){mouseDown(e)})
