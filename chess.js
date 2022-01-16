@@ -611,21 +611,23 @@ canvas.addEventListener("mouseup",function(e){mouseUp(e)})
 //button functions
 
 document.getElementById("newGameButton").onclick = function(){
-    alert("Sent this code to player2:    "+peer.id)
+    clientColor = pickColor(document.getElementById('colorPick').value)
+    opponentColor = !clientColor?'w':'b'
+    testStr=opponentColor+peer.id
+    console.log(testStr)
+    console.log(testStr.substring(0,1))
+    console.log(testStr.substring(1))
+    alert("Sent this code to player2:    "+opponentColor+peer.id)
     hideCheckBundle()
-    clientColor = true
     pieces.forEach(e=>e.loadImage());
 }
 document.getElementById("joinGameButton").onclick = function(){
     let codeInfo = window.prompt("Enter Game Id");
-    if (codeInfo == null || codeInfo == ""){
-        return;
-    }
-    else{
+    if (codeInfo !== null || codeInfo !== ""){
         hideCheckBundle()
-        clientColor= false
+        clientColor= codeInfo.substring(0,1)==='w'?true:false
         pieces.forEach(e=>e.loadImage())
-        conn = peer.connect(codeInfo)
+        conn = peer.connect(codeInfo.substring(1))
         connectionLink = conn
         conn.on('open', function() {
             conn.on('data', function(data) {
@@ -642,4 +644,9 @@ function hideCheckBundle(){
    } else {
          popwindow.style.display = "none";
      }
+}
+function pickColor(color){
+    if (color == 'Black'){return false}
+    else if (color == 'White'){return true}
+    return Math.random()>0.5?true:false
 }

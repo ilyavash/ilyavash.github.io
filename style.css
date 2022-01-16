@@ -37,3 +37,10 @@ div {text-align: center;color:white}
   margin-right: auto;
   border-bottom: 100px;
 }
+select{
+  margin-top: 2px;
+  margin-bottom: 7px;
+  width:20%;
+  text-align-last: center;
+  background-color: rgb(159, 158, 158);
+}
