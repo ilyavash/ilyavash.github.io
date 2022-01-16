@@ -613,10 +613,6 @@ canvas.addEventListener("mouseup",function(e){mouseUp(e)})
 document.getElementById("newGameButton").onclick = function(){
     clientColor = pickColor(document.getElementById('colorPick').value)
     opponentColor = !clientColor?'w':'b'
-    testStr=opponentColor+peer.id
-    console.log(testStr)
-    console.log(testStr.substring(0,1))
-    console.log(testStr.substring(1))
     alert("Sent this code to player2:    "+opponentColor+peer.id)
     hideCheckBundle()
     pieces.forEach(e=>e.loadImage());
