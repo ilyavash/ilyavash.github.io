@@ -15,16 +15,16 @@ div {text-align: center;color:white}
     width: 20%;
     background-color:	#446969 ;
     border-color: #446969;
+    margin-bottom: 1px;
+    color:rgb(224, 220, 220);
 }
 .newGameButton{
-  /*display: block;*/
   margin-left: 25%;
   width: 10%;
   background-color:	#446969 ;
   border-color: #446969;
 }
 .joinGameButton{
-  /*display: block;*/
   float:right;
   margin-inline-start: 20.2%;
   width: 10%;

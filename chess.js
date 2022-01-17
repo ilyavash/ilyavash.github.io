@@ -91,11 +91,11 @@ function movePiece(y,x,yy,xx,castle){
             booleanForCastle = false
             if (xx>x){
                 movePiece(y,7,y,5,true)
-                connectionLink.send(JSON.stringify({move:'castle',x:x,y:y,xx:xx,yy:yy,gameID:gameID,clientID:clientID}))
+                connectionLink.send(JSON.stringify({move:'castle',x:x,y:y,xx:xx,yy:yy}))
             }
             else{
                 movePiece(y,0,y,3,true)
-                connectionLink.send(JSON.stringify({move:'castle',x:x,y:y,xx:xx,yy:yy,gameID:gameID,clientID:clientID}))
+                connectionLink.send(JSON.stringify({move:'castle',x:x,y:y,xx:xx,yy:yy}))
             }
         }
         //promotion
@@ -132,7 +132,7 @@ function movePiece(y,x,yy,xx,castle){
     board[y][x]=null;
     if(!checkmateCheck()){return}
     if (booleanForCastle){
-        connectionLink.send(JSON.stringify({move:'move',x:x,y:y,xx:xx,yy:yy,gameID:gameID,clientID:clientID}))
+        connectionLink.send(JSON.stringify({move:'move',x:x,y:y,xx:xx,yy:yy}))
     }
     //checks if piece is in checkmate
     function checkmateCheck(){
@@ -149,11 +149,11 @@ function movePiece(y,x,yy,xx,castle){
             else{
                 if(validMove(blackKing.y,blackKing.x,true).length==0){
                     redSquareX = blackKing.x; redSquareY = blackKing.y
-                    connectionLink.send(JSON.stringify({method:'redSquare',move:'redSquares',redSquareX:redSquareX,redSquareY:redSquareY,gameID:gameID,clientID:clientID}))
+                    connectionLink.send(JSON.stringify({method:'redSquare',move:'redSquares',redSquareX:redSquareX,redSquareY:redSquareY}))
                 }
                 else{
                     redSquareX = -1; redSquareY = -1
-                    connectionLink.send(JSON.stringify({method:'redSquare',move:'redSquares',redSquareX:redSquareX,redSquareY:redSquareY,gameID:gameID,clientID:clientID}))
+                    connectionLink.send(JSON.stringify({method:'redSquare',move:'redSquares',redSquareX:redSquareX,redSquareY:redSquareY}))
                 }
                 return true
             }
@@ -171,11 +171,11 @@ function movePiece(y,x,yy,xx,castle){
             else{
                 if(validMove(whiteKing.y,whiteKing.x,true).length==0){
                     redSquareX = whiteKing.x; redSquareY = whiteKing.y
-                    connectionLink.send(JSON.stringify({method:'redSquare',move:'redSquares',redSquareX:redSquareX,redSquareY:redSquareY,gameID:gameID,clientID:clientID}))
+                    connectionLink.send(JSON.stringify({method:'redSquare',move:'redSquares',redSquareX:redSquareX,redSquareY:redSquareY}))
                 }
                 else{
                     redSquareX = -1; redSquareY = -1
-                    connectionLink.send(JSON.stringify({method:'redSquare',move:'redSquares',redSquareX:redSquareX,redSquareY:redSquareY,gameID:gameID,clientID:clientID}))
+                    connectionLink.send(JSON.stringify({method:'redSquare',move:'redSquares',redSquareX:redSquareX,redSquareY:redSquareY}))
                 }
                 return true
             }
@@ -415,70 +415,48 @@ function mouseDown(e){
             if(x>promoteX*canvas.width/8&&x<promoteX*canvas.width/8+canvas.width/16&&y>promoteY*canvas.height/8&&y<promoteY*canvas.height/8+canvas.height/16){
                 board[promoteY][promoteX].piece=4
                 board[promoteY][promoteX].color?board[promoteY][promoteX].image=pieces[8].image:board[promoteY][promoteX].image=pieces[0].image
-                promotion=false
-                turn = !turn
-                connectionLink.send(JSON.stringify({move:'promotion',x:socketPromoteX,y:socketPromoteY,xx:promoteX,yy:promoteY,piece:4,imageHelper1:8,imageHelper2:0,gameID:gameID,clientID:clientID}))
-                return
+                connectionLink.send(JSON.stringify({move:'promotion',x:socketPromoteX,y:socketPromoteY,xx:promoteX,yy:promoteY,piece:4,imageHelper1:8,imageHelper2:0}))
             }
             if(x>promoteX*canvas.width/8+canvas.width/16&&x<promoteX*canvas.width/8+canvas.width/8&&y>promoteY*canvas.height/8&&y<promoteY*canvas.height/8+canvas.height/16){
                 board[promoteY][promoteX].piece=2
                 board[promoteY][promoteX].color?board[promoteY][promoteX].image=pieces[9].image:board[promoteY][promoteX].image=pieces[1].image
-                promotion=false
-                turn = !turn
-                connectionLink.send(JSON.stringify({move:'promotion',x:socketPromoteX,y:socketPromoteY,xx:promoteX,yy:promoteY,piece:2,imageHelper1:9,imageHelper2:1,gameID:gameID,clientID:clientID}))
-                return
+                connectionLink.send(JSON.stringify({move:'promotion',x:socketPromoteX,y:socketPromoteY,xx:promoteX,yy:promoteY,piece:2,imageHelper1:9,imageHelper2:1}))
             }
             if(x>promoteX*canvas.width/8&&x<promoteX*canvas.width/8+canvas.width/16&&y>promoteY*canvas.height/8+canvas.height/16&&y<promoteY*canvas.height/8+canvas.height/8){
                 board[promoteY][promoteX].piece=3
                 board[promoteY][promoteX].color?board[promoteY][promoteX].image=pieces[10].image:board[promoteY][promoteX].image=pieces[2].image
-                promotion=false
-                turn = !turn
-                connectionLink.send(JSON.stringify({move:'promotion',x:socketPromoteX,y:socketPromoteY,xx:promoteX,yy:promoteY,piece:3,imageHelper1:10,imageHelper2:2,gameID:gameID,clientID:clientID}))
-                return
+                connectionLink.send(JSON.stringify({move:'promotion',x:socketPromoteX,y:socketPromoteY,xx:promoteX,yy:promoteY,piece:3,imageHelper1:10,imageHelper2:2}))
             }
             if(x>promoteX*canvas.width/8+canvas.width/16&&x<promoteX*canvas.width/8+canvas.width/8&&y>promoteY*canvas.width/8+canvas.width/16&&y<promoteY*canvas.width/8+canvas.width/8){
                 board[promoteY][promoteX].piece=5
                 board[promoteY][promoteX].color?board[promoteY][promoteX].image=pieces[11].image:board[promoteY][promoteX].image=pieces[3].image
-                promotion=false
-                turn = !turn
-                connectionLink.send(JSON.stringify({move:'promotion',x:socketPromoteX,y:socketPromoteY,xx:promoteX,yy:promoteY,piece:5,imageHelper1:11,imageHelper2:3,gameID:gameID,clientID:clientID}))
-                return
+                connectionLink.send(JSON.stringify({move:'promotion',x:socketPromoteX,y:socketPromoteY,xx:promoteX,yy:promoteY,piece:5,imageHelper1:11,imageHelper2:3}))
             }
         }
         else{
             if(x>(7-promoteX)*canvas.width/8&&x<(7-promoteX)*canvas.width/8+canvas.width/16&&y>(7-promoteY)*canvas.height/8&&y<(7-promoteY)*canvas.height/8+canvas.height/16){
                 board[promoteY][promoteX].piece=4
                 board[promoteY][promoteX].color?board[promoteY][promoteX].image=pieces[8].image:board[promoteY][promoteX].image=pieces[0].image
-                promotion=false
-                turn = !turn
-                connectionLink.send(JSON.stringify({move:'promotion',x:socketPromoteX,y:socketPromoteY,xx:promoteX,yy:promoteY,piece:4,imageHelper1:8,imageHelper2:0,gameID:gameID,clientID:clientID}))
-                return
+                connectionLink.send(JSON.stringify({move:'promotion',x:socketPromoteX,y:socketPromoteY,xx:promoteX,yy:promoteY,piece:4,imageHelper1:8,imageHelper2:0}))
             }
             if(x>(7-promoteX)*canvas.width/8+canvas.width/16&&x<(7-promoteX)*canvas.width/8+canvas.width/8&&y>(7-promoteY)*canvas.height/8&&y<(7-promoteY)*canvas.height/8+canvas.height/16){
                 board[promoteY][promoteX].piece=2
                 board[promoteY][promoteX].color?board[promoteY][promoteX].image=pieces[9].image:board[promoteY][promoteX].image=pieces[1].image
-                promotion=false
-                turn = !turn
-                connectionLink.send(JSON.stringify({move:'promotion',x:socketPromoteX,y:socketPromoteY,xx:promoteX,yy:promoteY,piece:2,imageHelper1:9,imageHelper2:1,gameID:gameID,clientID:clientID}))
-                return
+                connectionLink.send(JSON.stringify({move:'promotion',x:socketPromoteX,y:socketPromoteY,xx:promoteX,yy:promoteY,piece:2,imageHelper1:9,imageHelper2:1}))
             }
             if(x>(7-promoteX)*canvas.width/8&&x<(7-promoteX)*canvas.width/8+canvas.width/16&&y>(7-promoteY)*canvas.height/8+canvas.height/16&&y<(7-promoteY)*canvas.height/8+canvas.height/8){
                 board[promoteY][promoteX].piece=3
                 board[promoteY][promoteX].color?board[promoteY][promoteX].image=pieces[10].image:board[promoteY][promoteX].image=pieces[2].image
-                promotion=false
-                turn = !turn
-                connectionLink.send(JSON.stringify({move:'promotion',x:socketPromoteX,y:socketPromoteY,xx:promoteX,yy:promoteY,piece:3,imageHelper1:10,imageHelper2:2,gameID:gameID,clientID:clientID}))
-                return
+                connectionLink.send(JSON.stringify({move:'promotion',x:socketPromoteX,y:socketPromoteY,xx:promoteX,yy:promoteY,piece:3,imageHelper1:10,imageHelper2:2}))
             }
             if(x>(7-promoteX)*canvas.width/8+canvas.width/16&&x<(7-promoteX)*canvas.width/8+canvas.width/8&&y>(7-promoteY)*canvas.width/8+canvas.width/16&&y<(7-promoteY)*canvas.width/8+canvas.width/8){
                 board[promoteY][promoteX].piece=5
                 board[promoteY][promoteX].color?board[promoteY][promoteX].image=pieces[11].image:board[promoteY][promoteX].image=pieces[3].image
-                promotion=false
-                turn = !turn
-                connectionLink.send(JSON.stringify({move:'promotion',x:socketPromoteX,y:socketPromoteY,xx:promoteX,yy:promoteY,piece:5,imageHelper1:11,imageHelper2:3,gameID:gameID,clientID:clientID}))
-                return
+                connectionLink.send(JSON.stringify({move:'promotion',x:socketPromoteX,y:socketPromoteY,xx:promoteX,yy:promoteY,piece:5,imageHelper1:11,imageHelper2:3}))
             }
         }
+        promotion=false
+        turn = !turn
         return
     }
     xSquare = Math.floor((x)*8/canvas.width)
@@ -543,7 +521,7 @@ function onlineHelper(e){
         redSquareX = e.redSquareX
         redSquareY = e.redSquareY
         checkerBoard()
-        return;
+        return
     }
     if(e.move==='move'){
         if (board[e.yy][e.xx]!=null){
@@ -583,10 +561,14 @@ var connectionLink
 peer.on('connection', function(conn) {
     connectionLink = conn
     conn.on('open', function() {
-    conn.on('data', function(data) {
-        const result = JSON.parse(data)
-        onlineHelper(result)
-    })})});
+        hideCheckBundle()
+        mouseFunc()
+        pieces.forEach(e=>e.loadImage())
+        conn.on('data', function(data) {
+            const result = JSON.parse(data)
+            onlineHelper(result)
+        })
+    })});
 
 //bootup 
 //variables
@@ -604,35 +586,35 @@ var board = []; var pieces = [];
 setupBoard();
 
 
-canvas.addEventListener("mousemove",function(e){mouseMove(e)})
-canvas.addEventListener("mousedown",function(e){mouseDown(e)})
-canvas.addEventListener("mouseup",function(e){mouseUp(e)})
-
 //button functions
 
 document.getElementById("newGameButton").onclick = function(){
     clientColor = pickColor(document.getElementById('colorPick').value)
     opponentColor = !clientColor?'w':'b'
     alert("Sent this code to player2:    "+opponentColor+peer.id)
-    hideCheckBundle()
-    pieces.forEach(e=>e.loadImage());
 }
 document.getElementById("joinGameButton").onclick = function(){
     let codeInfo = window.prompt("Enter Game Id");
     if (codeInfo !== null || codeInfo !== ""){
         hideCheckBundle()
+        mouseFunc()
         clientColor= codeInfo.substring(0,1)==='w'?true:false
         pieces.forEach(e=>e.loadImage())
-        conn = peer.connect(codeInfo.substring(1))
-        connectionLink = conn
-        conn.on('open', function() {
-            conn.on('data', function(data) {
+        connectionLink = peer.connect(codeInfo.substring(1))
+        connectionLink.on('open', function() {
+            connectionLink.on('data', function(data) {
                 const result = JSON.parse(data)
                 onlineHelper(result)
             });
-          });
+        });
     }
 }
+function mouseFunc(){
+    canvas.addEventListener("mousemove",function(e){mouseMove(e)})
+    canvas.addEventListener("mousedown",function(e){mouseDown(e)})
+    canvas.addEventListener("mouseup",function(e){mouseUp(e)})
+}
+
 function hideCheckBundle(){
     var popwindow = document.getElementById("checkBundle");
     if (popwindow.style.display === "none") {
