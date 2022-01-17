@@ -11,7 +11,7 @@ x-------------->  y
 [y][x]
 */
 function setupBoard(){
-    checkerBoard();
+    checkerBoard()
     for(var i=0; i<8; i++) {
         board[i] = new Array(8)
     }
@@ -28,36 +28,36 @@ function setupBoard(){
 }
 
 function checkerBoard(){
-    var mark = true;
+    var mark = true
         for (var i=0;i<9;i++){
             for(var j=0;j<9;j++){
                 if (clientColor&& i == redSquareX && j == redSquareY){
                     ctx.fillStyle='red'
                 }
-                else if(!clientColor&& i == 7 - redSquareX && j == 7- redSquareY) {
+                else if(!clientColor&& i == 7 - redSquareX && j == 7 - redSquareY) {
                     ctx.fillStyle='red'
                 }
                 else{
-                    mark ? ctx.fillStyle='white': ctx.fillStyle='#2E2934';
+                    mark ? ctx.fillStyle='white': ctx.fillStyle='#2E2934'
                 }
-                mark=!mark;
-                ctx.fillRect(i*canvas.width/8,j*canvas.width/8,canvas.width/8,canvas.height/8);
+                mark=!mark
+                ctx.fillRect(i*canvas.width/8,j*canvas.width/8,canvas.width/8,canvas.height/8)
             }
         }
 }
 
 function clearSquare(y,x){
     (y%2==0&&x%2==0)||(y%2!=0&&x%2!=0) ? ctx.fillStyle='white': ctx.fillStyle='#2E2934'
-    ctx.fillRect(x*canvas.width/8,y*canvas.width/8,canvas.width/8,canvas.height/8);
+    ctx.fillRect(x*canvas.width/8,y*canvas.width/8,canvas.width/8,canvas.height/8)
 }
 // 1 pawn 2 knight 3 bishop 4 rook 5 queen 6 king
 class piece{
     constructor(piece, color,y,x){
-        this.piece=piece;
-        this.color=color;
-        this.x=x;
-        this.y=y;
-        this.inital = true;
+        this.piece=piece
+        this.color=color
+        this.x=x
+        this.y=y
+        this.inital = true
         this.isDead = false
         this.notMoved = true
         this.image = this.importImage()
@@ -77,111 +77,80 @@ class piece{
         }
     }
 }
-function movePiece(y,x,yy,xx,castle){
-    let booleanForCastle = true
-    if (clientColor!=turn||clientColor==null){return;}
-    let backupPiece = board[yy][xx]
-    if(castle == null){
-        if (y==yy&x==xx){return}
-        if(board[y][x]==null){return}
-        if(!board[y][x].color==turn){return}
-        if(validMove(y,x).find(e=>e.x==xx&&e.y==yy)==null){return}
-        //castle
-        if(board[y][x].piece==6&&Math.abs(x-xx)>1){
-            booleanForCastle = false
-            if (xx>x){
-                movePiece(y,7,y,5,true)
-                connectionLink.send(JSON.stringify({move:'castle',x:x,y:y,xx:xx,yy:yy}))
-            }
-            else{
-                movePiece(y,0,y,3,true)
-                connectionLink.send(JSON.stringify({move:'castle',x:x,y:y,xx:xx,yy:yy}))
-            }
-        }
-        //promotion
-        if(board[y][x].piece==1&&(yy==7||yy==0)){
-            //////clears image edge cases
-            checkerBoard()
-            pieces.forEach((e)=>{if(!e.isDead){e.loadImage()}})
-            clearSquare(y,x);
-            //////
-            if (board[yy][xx]!=null){
-                board[yy][xx].isDead = true
-            }
-            board[yy][xx]=board[y][x]
-            board[yy][xx].y=yy
-            board[yy][xx].x=xx
-            board[y][x]=null
-            if (checkmateCheck()===false){return}
-            promotePiece(yy,xx)
-            socketPromoteX=x; socketPromoteY=y
-            return;
-        }
-        turn = !turn;
-    }
-    clearSquare(y,x);
+function move(y,x,yy,xx){
+    const backupPiece = board[yy][xx]
+    clearSquare(y,x);clearSquare(yy,xx);
     if (board[yy][xx]!=null){
         board[yy][xx].isDead = true
     }
-    board[yy][xx]=board[y][x];
-    board[yy][xx].y=yy;
-    board[yy][xx].x=xx;
-    clearSquare(yy,xx);
-    board[yy][xx].loadImage();
-    board[yy][xx].notMoved = false;
-    board[y][x]=null;
-    if(!checkmateCheck()){return}
-    if (booleanForCastle){
-        connectionLink.send(JSON.stringify({move:'move',x:x,y:y,xx:xx,yy:yy}))
+    board[yy][xx]=board[y][x]
+    board[yy][xx].y=yy
+    board[yy][xx].x=xx
+    board[yy][xx].loadImage()
+    board[yy][xx].notMoved = false
+    board[y][x]=null
+    const check = checkmateCheck()
+    if (!check){
+        board[y][x]=board[yy][xx]; board[y][x].y=y; board[y][x].x=x; board[yy][xx]=backupPiece
+        if(board[yy][xx]!=null){board[yy][xx].isDead=false}
+        checkerBoard()
+        pieces.forEach((e)=>{if(!e.isDead){e.loadImage()}})
     }
-    //checks if piece is in checkmate
-    function checkmateCheck(){
-        if (!turn){
-            if(validMove(whiteKing.y,whiteKing.x,true).length==0){
-                board[y][x]=board[yy][xx]; board[y][x].y=y;board[y][x].x=x
-                board[yy][xx]=backupPiece
-                if(board[yy][xx]!=null){board[yy][xx].isDead=false}
-                checkerBoard()
-                pieces.forEach((e)=>{if(!e.isDead){e.loadImage()}})
-                turn=!turn
-                return false
-            }
-            else{
-                if(validMove(blackKing.y,blackKing.x,true).length==0){
-                    redSquareX = blackKing.x; redSquareY = blackKing.y
-                    connectionLink.send(JSON.stringify({method:'redSquare',move:'redSquares',redSquareX:redSquareX,redSquareY:redSquareY}))
-                }
-                else{
-                    redSquareX = -1; redSquareY = -1
-                    connectionLink.send(JSON.stringify({method:'redSquare',move:'redSquares',redSquareX:redSquareX,redSquareY:redSquareY}))
-                }
-                return true
-            }
+    return check
+
+}
+function checkmateCheck(){
+    if (clientColor){
+        if(validMove(whiteKing.y,whiteKing.x,true).length==0){
+            return false
+        }
+    }
+    else{
+        if(validMove(blackKing.y,blackKing.x,true).length==0){
+            return false
+        }
+    }
+    return true
+}
+function movePiece(y,x,yy,xx){
+    if (clientColor!=turn||clientColor==null||y==yy&x==xx||!board[y][x].color==turn){return}
+    if(validMove(y,x).find(e=>e.x==xx&&e.y==yy)==null){return}
+
+    //castle
+    if(board[y][x].piece==6&&Math.abs(x-xx)>1){
+        if (xx>x){
+            move(y,x,yy,xx)
+            move(y,7,y,5)
+            connectionLink.send(JSON.stringify({move:'castle',x:x,y:y,xx:xx,yy:yy}))
+            connectionLink.send(JSON.stringify({move:'move',x:7,y:y,xx:5,yy:yy}))
         }
         else{
-            if(validMove(blackKing.y,blackKing.x,true).length==0){
-                board[y][x]=board[yy][xx]; board[y][x].y=y;board[y][x].x=x
-                board[yy][xx]=backupPiece
-                if(board[yy][xx]!=null){board[yy][xx].isDead=false}
-                checkerBoard()
-                pieces.forEach((e)=>{if(!e.isDead){e.loadImage()}})
-                turn=!turn
-                return false
-            }
-            else{
-                if(validMove(whiteKing.y,whiteKing.x,true).length==0){
-                    redSquareX = whiteKing.x; redSquareY = whiteKing.y
-                    connectionLink.send(JSON.stringify({method:'redSquare',move:'redSquares',redSquareX:redSquareX,redSquareY:redSquareY}))
-                }
-                else{
-                    redSquareX = -1; redSquareY = -1
-                    connectionLink.send(JSON.stringify({method:'redSquare',move:'redSquares',redSquareX:redSquareX,redSquareY:redSquareY}))
-                }
-                return true
-            }
+            move(y,x,yy,xx)
+            move(y,0,y,3)
+            connectionLink.send(JSON.stringify({move:'castle',x:x,y:y,xx:xx,yy:yy}))
+            connectionLink.send(JSON.stringify({move:'move',x:0,y:y,xx:3,yy:yy}))
         }
+        turn=!turn
+        return
     }
-
+    //promotion
+    else if(board[y][x].piece==1&&(yy==7||yy==0)){
+        //////clears image edge cases////////////////////////
+        checkerBoard()
+        pieces.forEach((e)=>{if(!e.isDead){e.loadImage()}})
+        clearSquare(y,x)
+        /////////////////////////////////////////////////////
+        if (!move(y,x,yy,xx)){return}
+        promotePiece(yy,xx)
+        socketPromoteX=x; socketPromoteY=y
+        return
+    }
+    if (!move(y,x,yy,xx)){return}
+    connectionLink.send(JSON.stringify({move:'move',x:x,y:y,xx:xx,yy:yy}))
+    redSquare()
+    checkerBoard()
+    turn= !turn
+    return
 }
 // 1 pawn 2 knight 3 bishop 4 rook 5 queen 6 king
 function validMove(y,x,checkmate){
@@ -221,7 +190,7 @@ function validMove(y,x,checkmate){
                 if(board[j][i].color!=board[y][x].color){
                     validMoves.push({y:j,x:i})
                 }
-                break;
+                break
             }
         }
     }   
@@ -235,7 +204,7 @@ function validMove(y,x,checkmate){
             return true
         }
         function diagonalAttack(xx,yy,xop,yop,hori){
-            let i = xop(xx); let j = yop(yy); let pawn = true;
+            let i = xop(xx); let j = yop(yy); let pawn = true
             const pawnColorHelper = (pawnY,kingY,kingColor) => {if(kingColor&&kingY>=pawnY||!kingColor&&kingY<=pawnY){return true}return false}
             if (hori){pawn=false}
             while (-1<i&&i<8&&-1<j&&j<8){
@@ -359,7 +328,6 @@ function validMove(y,x,checkmate){
             return validMoves
     }
 }
-
 function promotePiece(yy,xx){
     promotion=true
     if(clientColor){
@@ -397,6 +365,18 @@ function promotePiece(yy,xx){
     isDrawing=false
     promoteY=yy
     promoteX=xx
+}
+
+function redSquare(){
+    if(validMove(blackKing.y,blackKing.x,true).length==0){
+        redSquareX = blackKing.x; redSquareY = blackKing.y
+    }
+    else if(validMove(whiteKing.y,whiteKing.x,true).length==0){
+        redSquareX = whiteKing.x; redSquareY = whiteKing.y
+    }
+    else{
+        redSquareX = -1; redSquareY = -1
+    }
 }
 
 function mouseMove(e){
@@ -478,6 +458,7 @@ function mouseUp(e){
     if(promotion){
         return
     }
+    redSquare()
     checkerBoard()
     pieces.forEach((e)=>{if(!e.isDead){e.loadImage()}})
 }
@@ -517,12 +498,6 @@ function imageURL(piece,color){
 }
 
 function onlineHelper(e){
-    if (e.move === 'redSquares'){
-        redSquareX = e.redSquareX
-        redSquareY = e.redSquareY
-        checkerBoard()
-        return
-    }
     if(e.move==='move'){
         if (board[e.yy][e.xx]!=null){
             board[e.yy][e.xx].isDead = true
@@ -548,9 +523,10 @@ function onlineHelper(e){
         board[e.yy][e.xx].y=e.yy
         board[e.yy][e.xx].x=e.xx
         board[e.y][e.x]=null
-        turn=!turn
+        turn = !turn
     }
-    turn=!turn
+    turn = !turn
+    redSquare()
     checkerBoard()
     pieces.forEach((e)=>{if(!e.isDead){e.loadImage()}})
 }
@@ -578,12 +554,12 @@ let promoteY = null; let promoteX = null; let socketPromoteX; let socketPromoteY
 let whiteKing; let blackKing; let redSquareX = -1; let redSquareY = -1;
 let clientColor = null; let clientID =null; let gameID = null;
 
-const canvas = document.querySelector('canvas');
-var ctx = canvas.getContext("2d");
-canvas.width=window.innerWidth/2.5;
-canvas.height=window.innerWidth/2.5;
-var board = []; var pieces = [];
-setupBoard();
+const canvas = document.querySelector('canvas')
+var ctx = canvas.getContext("2d")
+canvas.width=window.innerWidth/2.5
+canvas.height=window.innerWidth/2.5
+var board = []; var pieces = []
+setupBoard()
 
 
 //button functions
@@ -594,7 +570,7 @@ document.getElementById("newGameButton").onclick = function(){
     alert("Sent this code to player2:    "+opponentColor+peer.id)
 }
 document.getElementById("joinGameButton").onclick = function(){
-    let codeInfo = window.prompt("Enter Game Id");
+    let codeInfo = window.prompt("Enter Game Id")
     if (codeInfo !== null || codeInfo !== ""){
         hideCheckBundle()
         mouseFunc()
@@ -605,8 +581,8 @@ document.getElementById("joinGameButton").onclick = function(){
             connectionLink.on('data', function(data) {
                 const result = JSON.parse(data)
                 onlineHelper(result)
-            });
-        });
+            })
+        })
     }
 }
 function mouseFunc(){
@@ -616,11 +592,11 @@ function mouseFunc(){
 }
 
 function hideCheckBundle(){
-    var popwindow = document.getElementById("checkBundle");
+    var popwindow = document.getElementById("checkBundle")
     if (popwindow.style.display === "none") {
-        popwindow.style.display = "block";
+        popwindow.style.display = "block"
    } else {
-         popwindow.style.display = "none";
+         popwindow.style.display = "none"
      }
 }
 function pickColor(color){
