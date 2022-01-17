@@ -517,10 +517,12 @@ function imageURL(piece,color){
 }
 
 function onlineHelper(e){
+    console.log(e)
     if (e.move === 'redSquares'){
         redSquareX = e.redSquareX
         redSquareY = e.redSquareY
         checkerBoard()
+        pieces.forEach((e)=>{if(!e.isDead){e.loadImage()}})
         return
     }
     if(e.move==='move'){
@@ -548,9 +550,9 @@ function onlineHelper(e){
         board[e.yy][e.xx].y=e.yy
         board[e.yy][e.xx].x=e.xx
         board[e.y][e.x]=null
-        turn=!turn
+        turn = !turn
     }
-    turn=!turn
+    turn = !turn
     checkerBoard()
     pieces.forEach((e)=>{if(!e.isDead){e.loadImage()}})
 }
