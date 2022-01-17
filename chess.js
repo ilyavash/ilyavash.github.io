@@ -79,7 +79,7 @@ class piece{
 }
 function movePiece(y,x,yy,xx,castle){
     let booleanForCastle = true
-    if (clientColor!=turn||clientColor==null){return;}
+    if (clientColor!=turn||clientColor==null){return}
     let backupPiece = board[yy][xx]
     if(castle == null){
         if (y==yy&x==xx){return}
