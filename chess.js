@@ -57,7 +57,6 @@ class piece{
         this.color=color
         this.x=x
         this.y=y
-        this.inital = true
         this.isDead = false
         this.notMoved = true
         this.image = this.importImage()
@@ -77,7 +76,7 @@ class piece{
         }
     }
 }
-function move(y,x,yy,xx){
+function move(y,x,yy,xx,checkMate){
     const backupPiece = board[yy][xx]
     clearSquare(y,x);clearSquare(yy,xx);
     if (board[yy][xx]!=null){
@@ -89,8 +88,8 @@ function move(y,x,yy,xx){
     board[yy][xx].loadImage()
     board[yy][xx].notMoved = false
     board[y][x]=null
-    const check = checkmateCheck()
-    if (!check){
+    const check = checkCheck()
+    if (!check||checkMate){
         board[y][x]=board[yy][xx]; board[y][x].y=y; board[y][x].x=x; board[yy][xx]=backupPiece
         if(board[yy][xx]!=null){board[yy][xx].isDead=false}
         checkerBoard()
@@ -99,7 +98,23 @@ function move(y,x,yy,xx){
     return check
 
 }
-function checkmateCheck(){
+
+function checkMateChecker(){
+    for (i = 0;i<pieces.length;i++){
+        if ((pieces[i].color==clientColor)&&!pieces[i].isDead){
+            const moves = validMove(pieces[i].y,pieces[i].x)
+            for (j=0;j<moves.length;j++){
+                console.log("y: "+pieces[i].y+" x: "+pieces[i].x+" yy: "+moves[j].y+" xx: "+moves[j].x)
+                if(move(pieces[i].y,pieces[i].x,moves[j].y,moves[j].x,true)){
+                    return true
+                }
+            }
+        }
+    }
+    return false
+}
+
+function checkCheck(){
     if (clientColor){
         if(validMove(whiteKing.y,whiteKing.x,true).length==0){
             return false
@@ -115,7 +130,6 @@ function checkmateCheck(){
 function movePiece(y,x,yy,xx){
     if (clientColor!=turn||clientColor==null||y==yy&x==xx||!board[y][x].color==turn){return}
     if(validMove(y,x).find(e=>e.x==xx&&e.y==yy)==null){return}
-
     //castle
     if(board[y][x].piece==6&&Math.abs(x-xx)>1){
         if (xx>x){
@@ -368,14 +382,28 @@ function promotePiece(yy,xx){
 }
 
 function redSquare(){
+    checkmate = false
     if(validMove(blackKing.y,blackKing.x,true).length==0){
         redSquareX = blackKing.x; redSquareY = blackKing.y
+        if (!checkMateChecker()){
+            checkmate = true
+        }
     }
     else if(validMove(whiteKing.y,whiteKing.x,true).length==0){
         redSquareX = whiteKing.x; redSquareY = whiteKing.y
+        if (!checkMateChecker()){
+            checkmate = true
+        }
     }
     else{
         redSquareX = -1; redSquareY = -1
+    }
+    if (checkmate){
+        connectionLink.send(JSON.stringify({move:'checkmate'}))
+        setTimeout(function () {
+            alert("Checkmate! You lost")
+          }, 500)
+
     }
 }
 
@@ -524,6 +552,10 @@ function onlineHelper(e){
         board[e.yy][e.xx].x=e.xx
         board[e.y][e.x]=null
         turn = !turn
+    }
+    if (e.move==='checkmate'){
+        alert('Checkmate! You Won!')
+        return
     }
     turn = !turn
     redSquare()
