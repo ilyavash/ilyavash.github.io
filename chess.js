@@ -1,3 +1,4 @@
+
 /*
 [4,2,3,5,6,3,2,4] ^ 
 [1,1,1,1,1,1,1,1] |
@@ -104,13 +105,9 @@ function checkMateChecker(){
         if ((pieces[i].color==clientColor)&&!pieces[i].isDead){
             const moves = validMove(pieces[i].y,pieces[i].x)
             for (j=0;j<moves.length;j++){
-                console.log("y: "+pieces[i].y+" x: "+pieces[i].x+" yy: "+moves[j].y+" xx: "+moves[j].x)
                 if(move(pieces[i].y,pieces[i].x,moves[j].y,moves[j].x,true)){
                     return true
-                }
-            }
-        }
-    }
+    }   }   }   }
     return false
 }
 
@@ -604,12 +601,12 @@ document.getElementById("newGameButton").onclick = function(){
 document.getElementById("joinGameButton").onclick = function(){
     let codeInfo = window.prompt("Enter Game Id")
     if (codeInfo !== null || codeInfo !== ""){
-        hideCheckBundle()
-        mouseFunc()
-        clientColor= codeInfo.substring(0,1)==='w'?true:false
-        pieces.forEach(e=>e.loadImage())
         connectionLink = peer.connect(codeInfo.substring(1))
         connectionLink.on('open', function() {
+            hideCheckBundle()
+            mouseFunc()
+            clientColor= codeInfo.substring(0,1)==='w'?true:false
+            pieces.forEach(e=>e.loadImage())
             connectionLink.on('data', function(data) {
                 const result = JSON.parse(data)
                 onlineHelper(result)
