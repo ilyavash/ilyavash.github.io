@@ -1,4 +1,4 @@
-const pieceWorth = [0,1,3,3,5,9,0]
+const pieceWorth = [0,1,3,3,5,9,100]
 class ai{
     constructor(color){
         this.color = color==='w'?true:false
