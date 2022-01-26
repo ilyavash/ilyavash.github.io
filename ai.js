@@ -34,9 +34,30 @@ class ai{
     }
 
     calculateMove(move,depth){
+
+        var backupPiece2 = null
+
         function resetBoard(){
             board[y][x]=board[yy][xx]; board[y][x].y=y; board[y][x].x=x; board[yy][xx]=backupPiece; board[y][x].notMoved = true
             if(board[yy][xx]!=null){board[yy][xx].isDead=false}
+            if (backupPiece2!==null&&backupPiece2.move==='promo'){
+                board[y][x].piece = 1
+            }
+            else if(backupPiece2!==null && backupPiece2.move==='castle'){
+                board[y][backupPiece2.x]=board[y][backupPiece2.xx]; 
+                board[y][backupPiece2.x].y=y
+                board[y][backupPiece2.x].x=backupPiece2.x; 
+                board[yy][backupPiece2.xx]=null; 
+                board[y][backupPiece2.x].notMoved = true
+            }
+        }
+        function castleHelper(xBefore,xAfter){
+            backupPiece2 ={move:'castle',x:xBefore,xx:xAfter}
+            board[y][xAfter]=board[y][xBefore]
+            board[y][xAfter].y=y
+            board[y][xAfter].x=xAfter
+            board[y][xx].notMoved = false
+            board[y][xBefore]=null
         }
 
         let yy = move.yy; let xx = move.xx; let y = move.y; let x = move.x
@@ -50,6 +71,13 @@ class ai{
         board[yy][xx].x=xx
         board[yy][xx].notMoved = false
         board[y][x]=null
+        if ((yy==7 || yy ==0) && board[yy][xx].piece == 1){
+            backupPiece2 = {move:'promo'}
+            board[yy][xx].piece = 5 
+        }
+        if(board[yy][xx].piece==6 && Math.abs(x-xx)>1){
+            xx>x ? castleHelper(7,5) : castleHelper(0,3)
+        }
         if(!checkCheck(thisTurn)){
             resetBoard()
             return !thisTurn ? -1000:1000
@@ -85,13 +113,10 @@ class ai{
                 }
             }
         })
-
-
         return aiScore - playerScore
     }
 
     makeMove(move){
-        console.log(move)
         let yy = move.yy; let xx = move.xx; let y = move.y; let x = move.x
         if (board[yy][xx]!=null){
             board[yy][xx].isDead = true
