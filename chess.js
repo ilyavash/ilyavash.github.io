@@ -614,6 +614,10 @@ document.getElementById("newGameButton").onclick = function(){
         botGame = true
         bot = new ai(opponentColor)
         initialize()
+        if (!clientColor){
+            bot.nextMove()
+            onlineHelper({})
+        }
     }
 
 }

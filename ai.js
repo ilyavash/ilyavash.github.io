@@ -1,4 +1,5 @@
 const pieceWorth = [0,1,3,3,5,9,100]
+let counter = 0
 class ai{
     constructor(color){
         this.color = color==='w'?true:false
@@ -6,18 +7,19 @@ class ai{
     }
 
     nextMove(){
+        counter=0
         var maxValue = -1000
         var bestMove = {}
         var moves = this.possibleMoves(this.color)
         moves.forEach(e=>{
             let score = this.calculateMove(e,1)
-            if (maxValue<score){
+            if (maxValue<=score){
                 maxValue =score
                 bestMove = e
             }
         })
+        console.log(counter)
         this.makeMove(bestMove)
-
     }
 
     possibleMoves(color){
@@ -34,11 +36,13 @@ class ai{
     }
 
     calculateMove(move,depth){
-
-        var backupPiece2 = null
-
+        counter++
         function resetBoard(){
-            board[y][x]=board[yy][xx]; board[y][x].y=y; board[y][x].x=x; board[yy][xx]=backupPiece; board[y][x].notMoved = true
+            board[y][x]=board[yy][xx]; 
+            board[y][x].y=y; 
+            board[y][x].x=x; 
+            board[yy][xx]=backupPiece; 
+            board[y][x].notMoved = notMovedhelper
             if(board[yy][xx]!=null){board[yy][xx].isDead=false}
             if (backupPiece2!==null&&backupPiece2.move==='promo'){
                 board[y][x].piece = 1
@@ -59,11 +63,14 @@ class ai{
             board[y][xx].notMoved = false
             board[y][xBefore]=null
         }
-
-        let yy = move.yy; let xx = move.xx; let y = move.y; let x = move.x
+        let backupPiece2 = null
+        let yy = move.yy; let xx = move.xx; let y = move.y; let x = move.x; let notMovedhelper = board[y][x].notMoved
         let thisTurn = depth%2==0
         const backupPiece = board[yy][xx]
         if (board[yy][xx]!=null){
+            if (backupPiece.piece===6){
+                return !thisTurn ? 1000:-1000
+            }
             board[yy][xx].isDead = true
         }
         board[yy][xx]=board[y][x]
@@ -95,6 +102,9 @@ class ai{
             return value
         }
         const score = this.calculateBoard()
+        if (board[7][5]==null && pieces[12].x==5 && pieces[12].y==7){
+            debugger
+        }
         resetBoard()
         return score
     }
@@ -118,7 +128,7 @@ class ai{
 
     makeMove(move){
         let yy = move.yy; let xx = move.xx; let y = move.y; let x = move.x
-        if (board[yy][xx]!=null){
+        if (board[yy][xx]!=null || board[yy][xx]!=undefined){
             board[yy][xx].isDead = true
         }
         board[yy][xx]=board[y][x]
@@ -126,5 +136,14 @@ class ai{
         board[yy][xx].x=xx
         board[yy][xx].notMoved = false
         board[y][x]=null
+
+        if ((yy==7 || yy ==0) && board[yy][xx].piece == 1){
+            board[yy][xx].piece = 5 
+        }
+        if(board[yy][xx].piece==6 && Math.abs(x-xx)>1){
+            xx>x ? this.makeMove({x:7,xx:5,y:y,yy:yy}) : this.makeMove({x:0,xx:3,y:y,yy:yy})
+        }
+
+
     }
 }
