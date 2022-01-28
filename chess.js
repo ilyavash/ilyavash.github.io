@@ -78,6 +78,8 @@ class piece{
     }
 }
 function move(y,x,yy,xx,checkMate){
+    allMove+="move("+y+","+x+","+yy+","+xx+")\n"
+    console.log(allMove)
     const backupPiece = board[yy][xx]
     clearSquare(y,x);clearSquare(yy,xx);
     if (board[yy][xx]!=null){
@@ -561,10 +563,18 @@ function onlineHelper(e){
 }
 
 function moveOracle(obj){
+    debugger
     if (botGame){
+        if (obj.move==='checkmate'){
+            alert('Checkmate! You Lost')
+            return
+        }
         if (obj.move!='castle'){
-            bot.nextMove()
-            onlineHelper({})
+            if (bot.nextMove()){
+                onlineHelper({})
+                return
+            }
+            onlineHelper({move:'checkmate'})
         }
     }
     else{
@@ -598,6 +608,7 @@ var ctx = canvas.getContext("2d")
 canvas.width=window.innerWidth/2.5
 canvas.height=window.innerWidth/2.5
 var board = []; var pieces = []
+var allMove =''
 setupBoard()
 
 

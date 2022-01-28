@@ -18,8 +18,7 @@ class ai{
                 bestMove = e
             }
         })
-        console.log(counter)
-        this.makeMove(bestMove)
+        return this.makeMove(bestMove)
     }
 
     possibleMoves(color){
@@ -37,6 +36,7 @@ class ai{
 
     calculateMove(move,depth){
         counter++
+
         function resetBoard(){
             board[y][x]=board[yy][xx]; 
             board[y][x].y=y; 
@@ -55,6 +55,7 @@ class ai{
                 board[y][backupPiece2.x].notMoved = true
             }
         }
+
         function castleHelper(xBefore,xAfter){
             backupPiece2 ={move:'castle',x:xBefore,xx:xAfter}
             board[y][xAfter]=board[y][xBefore]
@@ -63,6 +64,7 @@ class ai{
             board[y][xx].notMoved = false
             board[y][xBefore]=null
         }
+
         let backupPiece2 = null
         let yy = move.yy; let xx = move.xx; let y = move.y; let x = move.x; let notMovedhelper = board[y][x].notMoved
         let thisTurn = depth%2==0
@@ -127,7 +129,14 @@ class ai{
     }
 
     makeMove(move){
+        console.log(move)
+        if (Object.keys(move).length === 0){
+            return false
+        }
+
         let yy = move.yy; let xx = move.xx; let y = move.y; let x = move.x
+        allMove+="move("+y+","+x+","+yy+","+xx+")\n"
+        console.log(allMove)
         if (board[yy][xx]!=null || board[yy][xx]!=undefined){
             board[yy][xx].isDead = true
         }
@@ -139,11 +148,14 @@ class ai{
 
         if ((yy==7 || yy ==0) && board[yy][xx].piece == 1){
             board[yy][xx].piece = 5 
+            board[yy][xx].image = board[yy][xx].importImage()
         }
         if(board[yy][xx].piece==6 && Math.abs(x-xx)>1){
             xx>x ? this.makeMove({x:7,xx:5,y:y,yy:yy}) : this.makeMove({x:0,xx:3,y:y,yy:yy})
         }
+        return true
 
 
     }
 }
+
