@@ -77,9 +77,8 @@ class piece{
         }
     }
 }
-function move(y,x,yy,xx,checkMate){
-    allMove+="move("+y+","+x+","+yy+","+xx+")\n"
-    console.log(allMove)
+function move(y,x,yy,xx,checkMate,color){
+    if (color === undefined){color = clientColor}
     const backupPiece = board[yy][xx]
     clearSquare(y,x);clearSquare(yy,xx);
     if (board[yy][xx]!=null){
@@ -91,13 +90,14 @@ function move(y,x,yy,xx,checkMate){
     board[yy][xx].loadImage()
     board[yy][xx].notMoved = false
     board[y][x]=null
-    const check = checkCheck(clientColor)
+    const check = checkCheck(color)
     if (!check||checkMate){
         board[y][x]=board[yy][xx]; board[y][x].y=y; board[y][x].x=x; board[yy][xx]=backupPiece
         if(board[yy][xx]!=null){board[yy][xx].isDead=false}
         checkerBoard()
         pieces.forEach((e)=>{if(!e.isDead){e.loadImage()}})
     }
+    if(check){    allMove+="move("+y+","+x+","+yy+","+xx+")\n"}
     return check
 
 }
@@ -107,7 +107,7 @@ function checkMateChecker(color){
         if ((pieces[i].color==color)&&!pieces[i].isDead){
             const moves = validMove(pieces[i].y,pieces[i].x)
             for (j=0;j<moves.length;j++){
-                if(move(pieces[i].y,pieces[i].x,moves[j].y,moves[j].x,true)){
+                if(move(pieces[i].y,pieces[i].x,moves[j].y,moves[j].x,true,color)){
                     return true
     }   }   }   }
     return false
@@ -159,8 +159,7 @@ function movePiece(y,x,yy,xx){
         return
     }
     if (!move(y,x,yy,xx)){return}
-    moveOracle({move:'move',x:x,y:y,xx:xx,yy:yy})
-    redSquare()
+    moveOracle({move:'move',x:x,y:y,xx:xx,yy:yy,checkmate:redSquare()})
     checkerBoard()
     turn= !turn
     return
@@ -381,29 +380,33 @@ function promotePiece(yy,xx){
 }
 
 function redSquare(){
-    checkmate = false
+    checkmate = undefined
     if(validMove(blackKing.y,blackKing.x,true).length==0){
         redSquareX = blackKing.x; redSquareY = blackKing.y
-        if (!checkMateChecker(clientColor)){
-            checkmate = true
+        if (!checkMateChecker(false)){
+            checkmate = false
         }
     }
     else if(validMove(whiteKing.y,whiteKing.x,true).length==0){
         redSquareX = whiteKing.x; redSquareY = whiteKing.y
-        if (!checkMateChecker(clientColor)){
+        if (!checkMateChecker(true)){
             checkmate = true
         }
     }
     else{
         redSquareX = -1; redSquareY = -1
     }
-    if (checkmate){
-        moveOracle({move:'checkmate'})
-        setTimeout(function () {
-            alert("Checkmate! You lost")
-          }, 500)
-
+    if (checkmate !== undefined){
+        if (checkmate === clientColor){
+            hideCheckBundle2('Checkmate, you lost!')
+            return true
+        }
+        else{
+            hideCheckBundle2('Checkmate, you won!')
+            return true
+        }
     }
+    return false
 }
 
 function mouseMove(e){
@@ -485,7 +488,6 @@ function mouseUp(e){
     if(promotion){
         return
     }
-    redSquare()
     checkerBoard()
     pieces.forEach((e)=>{if(!e.isDead){e.loadImage()}})
 }
@@ -552,10 +554,6 @@ function onlineHelper(e){
         board[e.y][e.x]=null
         turn = !turn
     }
-    if (e.move==='checkmate'){
-        alert('Checkmate! You Won!')
-        return
-    }
     turn = !turn
     redSquare()
     checkerBoard()
@@ -563,57 +561,18 @@ function onlineHelper(e){
 }
 
 function moveOracle(obj){
-    debugger
-    if (botGame){
-        if (obj.move==='checkmate'){
-            alert('Checkmate! You Lost')
+    if (!botGame){
+        connectionLink.send(JSON.stringify(obj))
+        return
+    }
+    if (obj.move!=='castle'&&!obj.checkmate){
+        if (bot.nextMove()){
+            onlineHelper({})
             return
         }
-        if (obj.move!='castle'){
-            if (bot.nextMove()){
-                onlineHelper({})
-                return
-            }
-            onlineHelper({move:'checkmate'})
-        }
-    }
-    else{
-        connectionLink.send(JSON.stringify(obj))
     }
 }
-
-//Server stuff
-var peer = new Peer()
-var connectionLink
-peer.on('connection', function(conn) {
-    connectionLink = conn
-    conn.on('open', function() {
-        initialize()
-        conn.on('data', function(data) {
-            const result = JSON.parse(data)
-            onlineHelper(result)
-        })
-    })});
-
-//bootup 
-//variables
-let x; let y; let isDrawing = false; let Xsquare; 
-let Ysquare; let drawingImage; let turn=true; let promotion = false;
-let promoteY = null; let promoteX = null; let socketPromoteX; let socketPromoteY;
-let whiteKing; let blackKing; let redSquareX = -1; let redSquareY = -1;
-let clientColor = null; let clientID =null; let gameID = null; let botGame = false; let bot
-
-const canvas = document.querySelector('canvas')
-var ctx = canvas.getContext("2d")
-canvas.width=window.innerWidth/2.5
-canvas.height=window.innerWidth/2.5
-var board = []; var pieces = []
-var allMove =''
-setupBoard()
-
-
 //button functions
-
 document.getElementById("newGameButton").onclick = function(){
     clientColor = pickColor(document.getElementById('colorPick').value)
     gameType = document.getElementById('gameType').value
@@ -646,6 +605,11 @@ document.getElementById("joinGameButton").onclick = function(){
         })
     }
 }
+document.getElementById("playAgainButton").onclick = function(){
+    bootup()
+    hideCheckBundle()
+}
+
 function mouseFunc(){
     canvas.addEventListener("mousemove",function(e){mouseMove(e)})
     canvas.addEventListener("mousedown",function(e){mouseDown(e)})
@@ -660,6 +624,17 @@ function hideCheckBundle(){
          popwindow.style.display = "none"
      }
 }
+
+function hideCheckBundle2(str){
+    document.getElementById("checkmate").innerHTML = str
+    var popwindow = document.getElementById("checkBundle2")
+    if (popwindow.style.display === "none") {
+        popwindow.style.display = "block"
+   } else {
+         popwindow.style.display = "none"
+     }
+}
+
 function pickColor(color){
     if (color == 'Black'){return false}
     else if (color == 'White'){return true}
@@ -670,3 +645,43 @@ function initialize(){
     mouseFunc()
     pieces.forEach(e=>e.loadImage())
 }
+
+let x; let y; let isDrawing; let Xsquare; 
+let Ysquare; let drawingImage; let turn; let promotion;
+let promoteY; let promoteX; let socketPromoteX; let socketPromoteY;
+let whiteKing; let blackKing; let redSquareX; let redSquareY;
+let clientColor; let clientID; let gameID; let botGame; let bot
+let canvas; let ctx; var board; var pieces; var allMove; var peer;var connectionLink
+
+//bootup 
+function bootup(){
+    //Server stuff
+    peer = new Peer()
+    peer.on('connection', function(conn) {
+        connectionLink = conn
+        conn.on('open', function() {
+            initialize()
+            conn.on('data', function(data) {
+                const result = JSON.parse(data)
+                onlineHelper(result)
+            })
+        })});
+
+    //variables
+    isDrawing = false;
+    turn=true; promotion = false;
+    promoteY = null;promoteX = null;socketPromoteX;socketPromoteY;
+    whiteKing; blackKing; redSquareX = -1; redSquareY = -1;
+    clientColor = null; clientID =null; gameID = null; botGame = false; 
+    
+    canvas = document.querySelector('canvas')
+    ctx = canvas.getContext("2d")
+
+    canvas.width=window.innerWidth/2.5
+    canvas.height=window.innerWidth/2.5
+    board = []; pieces = []
+    allMove =''
+    setupBoard()
+    hideCheckBundle2()
+}
+bootup()

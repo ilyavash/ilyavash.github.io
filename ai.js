@@ -129,7 +129,6 @@ class ai{
     }
 
     makeMove(move){
-        console.log(move)
         if (Object.keys(move).length === 0){
             return false
         }
