@@ -1,4 +1,5 @@
 const pieceWorth = [0,1,3,3,5,9,100]
+let counter = 0
 class ai{
     constructor(color){
         this.color = color==='w'?true:false
@@ -6,18 +7,18 @@ class ai{
     }
 
     nextMove(){
+        counter=0
         var maxValue = -1000
         var bestMove = {}
         var moves = this.possibleMoves(this.color)
         moves.forEach(e=>{
             let score = this.calculateMove(e,1)
-            if (maxValue<score){
+            if (maxValue<=score){
                 maxValue =score
                 bestMove = e
             }
         })
-        this.makeMove(bestMove)
-
+        return this.makeMove(bestMove)
     }
 
     possibleMoves(color){
@@ -34,15 +35,44 @@ class ai{
     }
 
     calculateMove(move,depth){
+        counter++
+
         function resetBoard(){
-            board[y][x]=board[yy][xx]; board[y][x].y=y; board[y][x].x=x; board[yy][xx]=backupPiece; board[y][x].notMoved = true
+            board[y][x]=board[yy][xx]; 
+            board[y][x].y=y; 
+            board[y][x].x=x; 
+            board[yy][xx]=backupPiece; 
+            board[y][x].notMoved = notMovedhelper
             if(board[yy][xx]!=null){board[yy][xx].isDead=false}
+            if (backupPiece2!==null&&backupPiece2.move==='promo'){
+                board[y][x].piece = 1
+            }
+            else if(backupPiece2!==null && backupPiece2.move==='castle'){
+                board[y][backupPiece2.x]=board[y][backupPiece2.xx]; 
+                board[y][backupPiece2.x].y=y
+                board[y][backupPiece2.x].x=backupPiece2.x; 
+                board[yy][backupPiece2.xx]=null; 
+                board[y][backupPiece2.x].notMoved = true
+            }
         }
 
-        let yy = move.yy; let xx = move.xx; let y = move.y; let x = move.x
+        function castleHelper(xBefore,xAfter){
+            backupPiece2 ={move:'castle',x:xBefore,xx:xAfter}
+            board[y][xAfter]=board[y][xBefore]
+            board[y][xAfter].y=y
+            board[y][xAfter].x=xAfter
+            board[y][xx].notMoved = false
+            board[y][xBefore]=null
+        }
+
+        let backupPiece2 = null
+        let yy = move.yy; let xx = move.xx; let y = move.y; let x = move.x; let notMovedhelper = board[y][x].notMoved
         let thisTurn = depth%2==0
         const backupPiece = board[yy][xx]
         if (board[yy][xx]!=null){
+            if (backupPiece.piece===6){
+                return !thisTurn ? 1000:-1000
+            }
             board[yy][xx].isDead = true
         }
         board[yy][xx]=board[y][x]
@@ -50,6 +80,13 @@ class ai{
         board[yy][xx].x=xx
         board[yy][xx].notMoved = false
         board[y][x]=null
+        if ((yy==7 || yy ==0) && board[yy][xx].piece == 1){
+            backupPiece2 = {move:'promo'}
+            board[yy][xx].piece = 5 
+        }
+        if(board[yy][xx].piece==6 && Math.abs(x-xx)>1){
+            xx>x ? castleHelper(7,5) : castleHelper(0,3)
+        }
         if(!checkCheck(thisTurn)){
             resetBoard()
             return !thisTurn ? -1000:1000
@@ -67,6 +104,9 @@ class ai{
             return value
         }
         const score = this.calculateBoard()
+        if (board[7][5]==null && pieces[12].x==5 && pieces[12].y==7){
+            debugger
+        }
         resetBoard()
         return score
     }
@@ -85,15 +125,18 @@ class ai{
                 }
             }
         })
-
-
         return aiScore - playerScore
     }
 
     makeMove(move){
-        console.log(move)
+        if (Object.keys(move).length === 0){
+            return false
+        }
+
         let yy = move.yy; let xx = move.xx; let y = move.y; let x = move.x
-        if (board[yy][xx]!=null){
+        allMove+="move("+y+","+x+","+yy+","+xx+")\n"
+        console.log(allMove)
+        if (board[yy][xx]!=null || board[yy][xx]!=undefined){
             board[yy][xx].isDead = true
         }
         board[yy][xx]=board[y][x]
@@ -101,5 +144,17 @@ class ai{
         board[yy][xx].x=xx
         board[yy][xx].notMoved = false
         board[y][x]=null
+
+        if ((yy==7 || yy ==0) && board[yy][xx].piece == 1){
+            board[yy][xx].piece = 5 
+            board[yy][xx].image = board[yy][xx].importImage()
+        }
+        if(board[yy][xx].piece==6 && Math.abs(x-xx)>1){
+            xx>x ? this.makeMove({x:7,xx:5,y:y,yy:yy}) : this.makeMove({x:0,xx:3,y:y,yy:yy})
+        }
+        return true
+
+
     }
 }
+

@@ -44,3 +44,6 @@ select{
   text-align-last: center;
   background-color: rgb(159, 158, 158);
 }
+.checkMate{
+  display : none;
+}
