@@ -13,8 +13,8 @@ class ai{
         var moves = this.possibleMoves(this.color)
         moves.forEach(e=>{
             let score = this.calculateMove(e,1)
-            if (maxValue<=score){
-                maxValue =score
+            if (maxValue<= score){
+                maxValue = score
                 bestMove = e
             }
         })
@@ -71,7 +71,7 @@ class ai{
         const backupPiece = board[yy][xx]
         if (board[yy][xx]!=null){
             if (backupPiece.piece===6){
-                return !thisTurn ? 1000:-1000
+                return !thisTurn ? 1001:-1001
             }
             board[yy][xx].isDead = true
         }
@@ -89,7 +89,7 @@ class ai{
         }
         if(!checkCheck(thisTurn)){
             resetBoard()
-            return !thisTurn ? -1000:1000
+            return !thisTurn ? -1001:1001
         }
         if(depth != this.maxDepth){
             //odd == human
@@ -114,6 +114,7 @@ class ai{
     calculateBoard(){
         let aiScore = 0
         let playerScore = 0 
+
 
         pieces.forEach(e=>{
             if (!e.isDead){
