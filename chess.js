@@ -81,7 +81,7 @@ function move(y,x,yy,xx,checkMate,color){
     if (color === undefined){color = clientColor}
     const backupPiece = board[yy][xx]
     clearSquare(y,x);clearSquare(yy,xx);
-    if (board[yy][xx]!=null){
+    if (board[yy][xx]!=null || board[yy][xx]!=undefined){
         board[yy][xx].isDead = true
     }
     board[yy][xx]=board[y][x]
@@ -127,7 +127,7 @@ function checkCheck(color){
     return true
 }
 function movePiece(y,x,yy,xx){
-    if (clientColor!=turn||clientColor==null||y==yy&x==xx||!board[y][x].color==turn){return}
+    if (clientColor!=turn||clientColor==null||y==yy&x==xx||board[y][x]==undefined||board[y][x]==null||!board[y][x].color==turn){return}
     if(validMove(y,x).find(e=>e.x==xx&&e.y==yy)==null){return}
     //castle
     if(board[y][x].piece==6&&Math.abs(x-xx)>1){
@@ -135,13 +135,13 @@ function movePiece(y,x,yy,xx){
             move(y,x,yy,xx)
             move(y,7,y,5)
             moveOracle({move:'castle',x:x,y:y,xx:xx,yy:yy})
-            moveOracle({move:'move',x:7,y:y,xx:5,yy:yy})
+            moveOracle({move:'move',x:7,y:y,xx:5,yy:yy,checkmate:redSquare()})
         }
         else{
             move(y,x,yy,xx)
             move(y,0,y,3)
             moveOracle({move:'castle',x:x,y:y,xx:xx,yy:yy})
-            moveOracle({move:'move',x:0,y:y,xx:3,yy:yy})
+            moveOracle({move:'move',x:0,y:y,xx:3,yy:yy,checkmate:redSquare()})
         }
         turn=!turn
         return
@@ -561,6 +561,8 @@ function onlineHelper(e){
 }
 
 function moveOracle(obj){
+
+    console.log(obj)
     if (!botGame){
         connectionLink.send(JSON.stringify(obj))
         return
