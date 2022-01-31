@@ -171,18 +171,18 @@ function validMove(y,x,checkmate){
     let i; let j;
     function castle(color){
         if (color){
-            if(piece.notMoved&&board[7][7]!=null&&board[7][7].notMoved&&board[7][7].piece==4&&board[7][5]==null&&board[7][6]==null&&kingCheck((e)=>e+2,(e)=>e)){
+            if(piece.notMoved&&board[7][7]!=null&&board[7][7].notMoved&&board[7][7].piece==4&&board[7][5]==null&&board[7][6]==null&&underAttack(x+2,y)&& validMoves.find(e=>e.x==5&&e.y==7)!==undefined){
                 validMoves.push({y:7,x:6})
             }
-            if(piece.notMoved&&board[7][0]!=null&&board[7][0].notMoved&&board[7][0].piece==4&&board[7][3]==null&&board[7][2]==null&&kingCheck((e)=>e-2,(e)=>e)&&kingCheck((e)=>e-3,(e)=>e)){
+            if(piece.notMoved&&board[7][0]!=null&&board[7][0].notMoved&&board[7][0].piece==4&&board[7][3]==null&&board[7][2]==null&& underAttack(x-2,y)&& validMoves.find(e=>e.x==2&&e.y==7)!==undefined ){
                 validMoves.push({y:7,x:1})
             }
         }
         else{
-            if(piece.notMoved&&board[0][7]!=null&&board[0][7].notMoved&&board[0][7].piece==4&&board[0][5]==null&&board[0][6]==null&&kingCheck((e)=>e+2,(e)=>e)){
+            if(piece.notMoved&&board[0][7]!=null&&board[0][7].notMoved&&board[0][7].piece==4&&board[0][5]==null&&board[0][6]==null&& underAttack(x+2,y) && validMoves.find(e=>e.x==5&&e.y==0)!==undefined){
                 validMoves.push({y:0,x:6})
             }
-            if(piece.notMoved&&board[0][0]!=null&&board[0][0].notMoved&&board[0][0].piece==4&&board[0][3]==null&&board[0][2]==null&&kingCheck((e)=>e-2,(e)=>e)&&kingCheck((e)=>e-3,(e)=>e)){
+            if(piece.notMoved&&board[0][0]!=null&&board[0][0].notMoved&&board[0][0].piece==4&&board[0][3]==null&&board[0][2]==null&&underAttack(x-2,y)&& validMoves.find(e=>e.x==2&&e.y==0)!==undefined ){
                 validMoves.push({y:0,x:1})
             }  
         }
@@ -206,62 +206,64 @@ function validMove(y,x,checkmate){
             }
         }
     }   
+    function underAttack(xx,yy){
+        return horseAttack(xx,yy,(e)=>e-2,(e)=>e-1)&&
+        horseAttack(xx,yy,(e)=>e-1,(e)=>e-2)&&
+        horseAttack(xx,yy,(e)=>e-2,(e)=>e+1)&&
+        horseAttack(xx,yy,(e)=>e-1,(e)=>e+2)&&
+        horseAttack(xx,yy,(e)=>e+1,(e)=>e-2)&&
+        horseAttack(xx,yy,(e)=>e+2,(e)=>e-1)&&
+        horseAttack(xx,yy,(e)=>e+2,(e)=>e+1)&&
+        horseAttack(xx,yy,(e)=>e+1,(e)=>e+2)&&
+        diagonalAttack(xx,yy,(e)=>e+1,(e)=>e,true)&&
+        diagonalAttack(xx,yy,(e)=>e-1,(e)=>e,true)&&
+        diagonalAttack(xx,yy,(e)=>e,(e)=>e+1,true)&&
+        diagonalAttack(xx,yy,(e)=>e,(e)=>e-1,true)&&
+        diagonalAttack(xx,yy,(e)=>e+1,(e)=>e+1,false)&&
+        diagonalAttack(xx,yy,(e)=>e+1,(e)=>e-1,false)&&
+        diagonalAttack(xx,yy,(e)=>e-1,(e)=>e+1,false)&&
+        diagonalAttack(xx,yy,(e)=>e-1,(e)=>e-1,false)
+    }
+    function horseAttack(xx,yy,xop,yop){
+        let xxx = xop(xx); let yyy = yop(yy)
+        if (xxx>-1&&xxx<8&&yyy>-1&&yyy<8){
+            if(board[yyy][xxx]==null){return true}
+            if(board[yyy][xxx].color!=board[y][x].color&&board[yyy][xxx].piece==2){return false}
+        }
+        return true
+    }
+    function diagonalAttack(xx,yy,xop,yop,hori){
+        let i = xop(xx); let j = yop(yy); let pawn = true
+        const pawnColorHelper = (pawnY,kingY,kingColor) => {if(kingColor&&kingY>=pawnY||!kingColor&&kingY<=pawnY){return true}return false}
+        if (hori){pawn=false}
+        while (-1<i&&i<8&&-1<j&&j<8){
+            if(board[j][i]==null){
+                pawn = false
+                i = xop(i); j = yop(j)
+                continue
+            }
+            if(board[j][i].piece==6&&board[j][i].color==board[y][x].color){
+                i = xop(i); j = yop(j)
+                continue
+            }
+            if(board[j][i].color==board[y][x].color){
+                break
+            }
+            if(hori&&(board[j][i].piece==4||board[j][i].piece==5||(board[j][i].piece==6&&((xx==i&&Math.abs(j-yy)<2)||(yy==j&&Math.abs(i-xx)<2))))){
+                return false
+            }
+            if(!hori&&board[j][i].piece==3||board[j][i].piece==5||(board[j][i].piece==6&&Math.abs(j-yy)<2&&Math.abs(i-xx)<2)||(pawn&&board[j][i].piece==1&&pawnColorHelper(j,yy,board[y][x].color))){
+                return false
+            }
+            else{break}
+        }
+        return true
+    }
     function kingCheck(xop,yop){
-        function horseAttack(xx,yy,xop,yop){
-            let xxx = xop(xx); let yyy = yop(yy)
-            if (xxx>-1&&xxx<8&&yyy>-1&&yyy<8){
-                if(board[yyy][xxx]==null){return true}
-                if(board[yyy][xxx].color!=board[y][x].color&&board[yyy][xxx].piece==2){return false}
-            }
-            return true
-        }
-        function diagonalAttack(xx,yy,xop,yop,hori){
-            let i = xop(xx); let j = yop(yy); let pawn = true
-            const pawnColorHelper = (pawnY,kingY,kingColor) => {if(kingColor&&kingY>=pawnY||!kingColor&&kingY<=pawnY){return true}return false}
-            if (hori){pawn=false}
-            while (-1<i&&i<8&&-1<j&&j<8){
-                if(board[j][i]==null){
-                    pawn = false
-                    i = xop(i); j = yop(j)
-                    continue
-                }
-                if(board[j][i].piece==6&&board[j][i].color==board[y][x].color){
-                    i = xop(i); j = yop(j)
-                    continue
-                }
-                if(board[j][i].color==board[y][x].color){
-                    break
-                }
-                if(hori&&(board[j][i].piece==4||board[j][i].piece==5||(board[j][i].piece==6&&((xx==i&&Math.abs(j-yy)<2)||(yy==j&&Math.abs(i-xx)<2))))){
-                    return false
-                }
-                if(!hori&&board[j][i].piece==3||board[j][i].piece==5||(board[j][i].piece==6&&Math.abs(j-yy)<2&&Math.abs(i-xx)<2)||(pawn&&board[j][i].piece==1&&pawnColorHelper(j,yy,board[y][x].color))){
-                    return false
-                }
-                else{break}
-            }
-            return true
-        }
         let xx = xop(x); let yy = yop(y)
         //checks for attacks from horses and horizental and vertical moves
         //if(xx>-1&&xx<8&&yy>-1&&yy<8&&(board[yy][xx]==null||(board[yy][xx].color!=board[y][x].color)||board[yy][xx].y==yy&&board[yy][xx].x==x)&&
-        if(xx>-1&&xx<8&&yy>-1&&yy<8&&(board[yy][xx]==null||board[yy][xx].color!=board[y][x].color||xx==x&&yy==y)&&
-            horseAttack(xx,yy,(e)=>e-2,(e)=>e-1)&&
-            horseAttack(xx,yy,(e)=>e-1,(e)=>e-2)&&
-            horseAttack(xx,yy,(e)=>e-2,(e)=>e+1)&&
-            horseAttack(xx,yy,(e)=>e-1,(e)=>e+2)&&
-            horseAttack(xx,yy,(e)=>e+1,(e)=>e-2)&&
-            horseAttack(xx,yy,(e)=>e+2,(e)=>e-1)&&
-            horseAttack(xx,yy,(e)=>e+2,(e)=>e+1)&&
-            horseAttack(xx,yy,(e)=>e+1,(e)=>e+2)&&
-            diagonalAttack(xx,yy,(e)=>e+1,(e)=>e,true)&&
-            diagonalAttack(xx,yy,(e)=>e-1,(e)=>e,true)&&
-            diagonalAttack(xx,yy,(e)=>e,(e)=>e+1,true)&&
-            diagonalAttack(xx,yy,(e)=>e,(e)=>e-1,true)&&
-            diagonalAttack(xx,yy,(e)=>e+1,(e)=>e+1,false)&&
-            diagonalAttack(xx,yy,(e)=>e+1,(e)=>e-1,false)&&
-            diagonalAttack(xx,yy,(e)=>e-1,(e)=>e+1,false)&&
-            diagonalAttack(xx,yy,(e)=>e-1,(e)=>e-1,false))
+        if(xx>-1&&xx<8&&yy>-1&&yy<8&&(board[yy][xx]==null||board[yy][xx].color!=board[y][x].color||xx==x&&yy==y)&&underAttack(xx,yy))
             {validMoves.push({y:yop(y),x:xop(x)})}
     }
     switch(piece.piece){
