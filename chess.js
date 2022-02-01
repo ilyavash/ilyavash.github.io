@@ -563,8 +563,6 @@ function onlineHelper(e){
 }
 
 function moveOracle(obj){
-
-    console.log(obj)
     if (!botGame){
         connectionLink.send(JSON.stringify(obj))
         return
