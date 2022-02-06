@@ -143,11 +143,11 @@ class ai{
             if (!e.isDead){
                 if (e.color===this.color){
                     aiScore += pieceWorth[e.piece]
-                    aiScore += this.positionScore(e)*1/5
+                    aiScore += this.positionScore(e)*1/10
                 }
                 else{
                     playerScore += pieceWorth[e.piece]
-                    playerScore += this.positionScore(e)*1/5
+                    playerScore += this.positionScore(e)*1/10
                 }
             }
         })
